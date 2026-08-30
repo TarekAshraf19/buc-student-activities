@@ -1,0 +1,538 @@
+{
+  "Home": {
+    "title": "BUC Student Activities",
+    "description": "Discover student life, activities, and achievements at BUC."
+  },
+
+"Navbar": {
+  "brand": "BUC Student Activities",
+  "subtitle": "Student Activities Platform",
+  "home": "Home",
+  "activities": "Activities",
+  "colleges": "Colleges",
+  "localRegionalActivities": "Local & Regional Activities",
+  "login": "Login",
+  "dashboard": "Dashboard",
+  "logout": "Logout",
+  "university": "BUC",
+  "arabic": "العربية",
+  "english": "English",
+  "entities": {
+  "college": "College",
+  "localRegional": "Local & Regional Activities",
+  "studentClub": "Student Family",
+  "scientificSociety": "Scientific Society"
+}
+},
+
+  "Hero": {
+    "slides": {
+      "1": {
+        "eyebrow": "BUC STUDENT LIFE",
+        "title": "Beyond the classroom.",
+        "description": "Discover the activities, experiences and achievements that bring student life at BUC to life."
+      },
+      "2": {
+        "eyebrow": "STUDENT ACTIVITIES",
+        "title": "Create. Participate. Achieve.",
+        "description": "Explore events, competitions, communities and experiences created by BUC students."
+      },
+      "3": {
+        "eyebrow": "ONE UNIVERSITY",
+        "title": "Every college has a story.",
+        "description": "Follow the latest activities and achievements from every college at Badr University in Cairo."
+      },
+      "4": {
+        "eyebrow": "BUC COMMUNITY",
+        "title": "More than a university experience.",
+        "description": "A place where students learn, connect, compete and create unforgettable experiences."
+      }
+    },
+    "explore": "Explore Activities",
+    "colleges": "Explore Colleges",
+    "goToSlide": "Go to slide {number}"
+  },
+
+"ExploreStudentLife": {
+  "eyebrow": "EXPLORE STUDENT LIFE",
+  "title": "Discover Student Activities",
+  "description": "Explore the different areas of student life and discover activities, initiatives, student families, and scientific societies at BUC.",
+  "items": {
+    "1": {
+      "title": "Events & Activities",
+      "description": "Discover all student activities and events across the university."
+    },
+    "2": {
+      "title": "Local & Regional Activities",
+      "description": "Explore local and regional activities, events, and initiatives."
+    },
+    "3": {
+      "title": "Student Families",
+      "description": "Discover student family activities through the five specialized committees."
+    },
+    "4": {
+      "title": "Scientific Societies",
+      "description": "Explore scientific activities and initiatives organized by scientific societies."
+    }
+  }
+},
+
+  "LatestActivities": {
+    "eyebrow": "WHAT'S HAPPENING",
+    "title": "Discover the latest activities",
+    "description": "Stay updated with the latest activities, events and achievements from across Badr University in Cairo.",
+    "viewAll": "View All Activities",
+    "discoverMore": "Discover More",
+    "loading": "Loading activities...",
+    "error": "Unable to load activities.",
+    "empty": "No activities available yet.",
+
+    "items": {
+      "1": {
+        "title": "Innovation & Technology Summit",
+        "college": "Faculty of Engineering",
+        "date": "March 15, 2026",
+        "category": "Event"
+      },
+      "2": {
+        "title": "Students Win National Competition",
+        "college": "Faculty of Business and Economics",
+        "date": "March 10, 2026",
+        "category": "Achievement"
+      },
+      "3": {
+        "title": "Student Cultural Festival",
+        "college": "Badr University in Cairo",
+        "date": "March 5, 2026",
+        "category": "Festival"
+      }
+    }
+  },
+  "Colleges": {
+    "eyebrow": "OUR COLLEGES",
+    "title": "Explore Our Colleges",
+    "description": "Discover the diverse colleges at Badr University in Cairo and explore the student activities happening across campus.",
+    "explore": "Explore College",
+    "viewAll": "View All Colleges",
+    "loading": "Loading colleges...",
+    "error": "Unable to load colleges.",
+    "empty": "No colleges available yet.",  
+
+    "items": {
+      "1": {
+        "name": "Faculty of Dentistry",
+        "description": "Explore the latest in dental education and student activities.",
+        "activitiesCount": "12 Activities"
+      },
+      "2": {
+        "name": "Faculty of Business and Economics",
+        "description": "Discover entrepreneurship, leadership, business events, and more.",
+        "activitiesCount": "9 Activities"
+      },
+      "3": {
+        "name": "Faculty of Engineering",
+        "description": "Join innovative projects, competitions, workshops, and engineering events.",
+        "activitiesCount": "15 Activities"
+      },
+      "4": {
+        "name": "Faculty of Applied Arts",
+        "description": "Explore creativity, design, exhibitions, and artistic student activities.",
+        "activitiesCount": "8 Activities"
+      }
+    }
+  },
+  "Achievements": {
+  "eyebrow": "OUR IMPACT",
+  "title": "Student Activities at a Glance",
+  "description": "A growing community of students, activities, events, and achievements across BUC.",
+
+  "stats": {
+    "students": {
+      "number": "2K+",
+      "label": "Active Students"
+    },
+    "activities": {
+      "number": "50+",
+      "label": "Student Activities"
+    },
+    "colleges": {
+      "number": "16",
+      "label": "Colleges"
+    },
+    "achievements": {
+      "number": "100+",
+      "label": "Achievements"
+    }
+  }
+},
+"CTA": {
+  "eyebrow": "GET INVOLVED",
+  "title": "Your University Experience Starts Here",
+  "description": "Discover activities, meet new people, develop your skills, and make your time at BUC more memorable.",
+  "primaryButton": "Explore Activities",
+  "secondaryButton": "Explore Colleges"
+},
+"Footer": {
+  "brand": "BUC Student Activities",
+  "description": "Your gateway to student life, activities, events, and opportunities at Badr University in Cairo.",
+
+  "quickLinks": {
+    "title": "Quick Links",
+    "home": "Home",
+    "activities": "Activities",
+    "colleges": "Colleges",
+    "achievements": "Achievements"
+  },
+
+  "activities": {
+    "title": "Activities",
+    "clubs": "Student Clubs",
+    "events": "University Events",
+    "competitions": "Competitions",
+    "workshops": "Workshops"
+  },
+
+  "contact": {
+    "title": "Contact",
+    "location": "Badr City, Cairo, Egypt",
+    "email": "student.activities@buc.edu.eg",
+    "phone": "+20 XXX XXX XXXX"
+  },
+
+  "copyright": "© 2026 BUC Student Activities. All rights reserved.",
+  "privacy": "Privacy",
+  "terms": "Terms"
+},
+"ActivitiesPage": {
+  "eyebrow": "DISCOVER",
+  "title": "Student Activities",
+  "description": "Explore the latest activities, events and experiences happening at Badr University in Cairo.",
+  "loading": "Loading activities...",
+  "error": "Failed to load activities.",
+  "empty": "No activities available right now.",
+  "viewDetails": "View Details"
+},
+"ActivityDetails": {
+  "loading": "Loading activity...",
+  "notFound": "Activity not found",
+  "notFoundDescription": "The activity you are looking for does not exist or may have been removed.",
+  "back": "Back to Activities",
+  "about": "About this Activity",
+  "information": "Activity Information",
+  "college": "College",
+  "date": "Date",
+  "category": "Category",
+  "section": "Activity Section",
+  "committee": "Committee",
+  "scopes": {
+  "college": "College",
+  "localRegional": "Local & Regional Activities",
+  "studentClub": "Student Families",
+  "scientificSociety": "Scientific Society"
+  },
+  "committees": {
+  "social-media": "Social Communication Committee",
+  "social": "Social Activities Committee",
+  "sports": "Sports Activities Committee",
+  "cultural": "Cultural Activities Committee",
+  "art": "Art Activities Committee"
+  }
+},
+"CollegesPage": {
+  "eyebrow": "OUR COLLEGES",
+  "title": "Explore BUC Colleges",
+  "description": "Discover the different colleges at Badr University in Cairo and explore their activities and student life.",
+  "college": "BUC College",
+  "viewCollege": "View College",
+  "loading": "Loading colleges...",
+  "error": "Something went wrong. Please try again.",
+  "empty": "No colleges available yet."
+},
+"CollegeDetails": {
+  "loading": "Loading college...",
+  "notFound": "College not found",
+  "notFoundDescription": "The college you are looking for does not exist or may have been removed.",
+  "back": "Back to Colleges",
+  "college": "BUC College",
+  "about": "About the College",
+  "activitiesEyebrow": "STUDENT LIFE",
+  "activitiesTitle": "Latest Activities",
+  "viewAllActivities": "View All Activities",
+  "viewActivity": "View Activity",
+  "noActivities": "No activities have been added for this college yet."
+},
+"Dashboard": {
+  "loading": "Loading dashboard...",
+  "eyebrow": "COLLEGE DASHBOARD",
+  "title": "Dashboard",
+  "addActivity": "Add Activity",
+  "welcome": "Welcome back!",
+  "description": "From here, you can manage your college activities and share new events with BUC students.",
+  "yourActivities": "Your Activities",
+  "noActivities": "No activities yet",
+  "noActivitiesDescription": "You haven't published any activities yet.",
+  "edit": "Edit Activity",
+  "noCollege": "No college found",
+  "noCollegeDescription": "Your account is not connected to a college.",
+  "collegePlan": "College Plan",
+  "delete": "Delete",
+  "deleting": "Deleting...",
+  "deleteConfirm": "Are you sure you want to delete this activity? This action cannot be undone.",
+  "deleteError": "Something went wrong while deleting the activity.",
+  "noEntity": "Account not linked",
+  "noEntityDescription": "This account is not linked to an activity section.",
+  "activitiesError": "Failed to load activities.",
+  "entities": {
+  "college": "College",
+  "localRegional": "Local & Regional Activities",
+  "scientificSociety": "Scientific Society",
+  "studentClub": "Student Families"
+}
+},
+"AddActivity": {
+  "loading": "Loading...",
+  "back": "Back to dashboard",
+  "eyebrow": "NEW ACTIVITY",
+  "title": "Add New Activity",
+  "description": "Create a new activity for your college.",
+  "titleEn": "Activity Title (English)",
+  "titleAr": "Activity Title (Arabic)",
+  "descriptionEn": "Description (English)",
+  "descriptionAr": "Description (Arabic)",
+  "categoryEn": "Category (English)",
+  "categoryAr": "Category (Arabic)",
+  "date": "Activity Date",
+  "image": "Activity Image",
+  "uploadImage": "Upload image",
+  "invalidImage": "Please select a valid image file",
+  "imageRequired": "Please select an image",
+  "college": "College",
+  "saving": "Saving...",
+  "submit": "Create Activity",
+  "error": "Something went wrong. Please try again.",
+  "committeeRequired": "Please choose a committee.",
+  "entityNotFound": "Your account is not linked to an activity section."
+},
+"EditActivity": {
+  "loading": "Loading activity...",
+  "notFound": "Activity not found",
+  "notFoundDescription": "This activity does not exist or you don't have permission to edit it.",
+  "back": "Back to Dashboard",
+  "eyebrow": "EDIT ACTIVITY",
+  "title": "Edit Activity",
+  "description": "Update your activity information.",
+  "titleEn": "Activity Title (English)",
+  "titleAr": "Activity Title (Arabic)",
+  "descriptionEn": "Description (English)",
+  "descriptionAr": "Description (Arabic)",
+  "categoryEn": "Category (English)",
+  "categoryAr": "Category (Arabic)",
+  "date": "Activity Date",
+  "image": "Image URL",
+  "submit": "Save Changes",
+  "saving": "Saving...",
+  "error": "Something went wrong. Please try again.",
+  "changeImage": "Choose a new image",
+  "invalidImage": "Please select a valid image file.",
+  "committeeRequired": "Please choose a committee."
+},
+"UpcomingEvents": {
+  "eyebrow": "EVENT CALENDAR",
+  "title": "What's Happening at BUC?",
+  "description": "Explore upcoming activities and events across Badr University in Cairo.",
+  "loading": "Loading calendar...",
+  "viewAll": "View All Activities",
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+  "more": "more",
+  "eventHint": "Click on an event to view its details.",
+  "sunday": "Sun",
+  "monday": "Mon",
+  "tuesday": "Tue",
+  "wednesday": "Wed",
+  "thursday": "Thu",
+  "friday": "Fri",
+  "saturday": "Sat"
+},
+"CollegePlan": {
+  "loading": "Loading...",
+  "collegeNotFound": "College not found.",
+  "back": "Back to Dashboard",
+
+  "eyebrow": "College Plan",
+  "title": "College Plan",
+  "description": "Manage the college plan, planned activities, and plan document.",
+
+  "currentPlan": "Current College Plan",
+  "viewPlan": "View Plan",
+
+  "planName": "Plan Name",
+  "planNamePlaceholder": "Example: Annual Plan 2026",
+
+  "planFile": "Plan PDF",
+  "chooseFile": "Choose PDF file",
+  "pdfOnly": "PDF files only",
+
+  "academicYear": "Academic Year",
+  "academicYearPlaceholder": "2026/2027",
+
+  "semester": "Semester",
+  "firstSemester": "First Semester",
+  "secondSemester": "Second Semester",
+  "summerSemester": "Summer Semester",
+
+  "plannedActivities": "Planned Activities",
+  "plannedActivitiesDescription": "Add the activities included in the college plan.",
+  "plannedActivity": "Planned Activity",
+  "addActivity": "Add Activity",
+  "removeActivity": "Remove Activity",
+
+  "activityTitleEn": "Activity Title (English)",
+  "activityTitleAr": "Activity Title (Arabic)",
+  "activityCategoryEn": "Category (English)",
+  "activityCategoryAr": "Category (Arabic)",
+  "plannedDate": "Planned Date",
+
+  "save": "Save Plan",
+  "saving": "Saving...",
+
+  "delete": "Delete Plan",
+  "deleting": "Deleting...",
+
+  "invalidFile": "Please select a valid PDF file.",
+  "nameRequired": "Please enter the plan name.",
+  "academicYearRequired": "Academic year is required.",
+  "fileRequired": "Please select a PDF file.",
+  "plannedActivityRequired": "Please complete all planned activity fields.",
+
+  "saveSuccess": "College plan saved successfully.",
+  "saveError": "Something went wrong while saving the college plan.",
+
+  "deleteConfirm": "Are you sure you want to delete the college plan?",
+  "deleteSuccess": "College plan deleted successfully.",
+  "deleteError": "Something went wrong while deleting the college plan."
+},
+"Login": {
+  "title": "Welcome Back",
+  "description": "Sign in to access your college dashboard",
+  "emailLabel": "Email Address",
+  "emailPlaceholder": "example@buc.edu.eg",
+  "passwordLabel": "Password",
+  "invalidCredentials": "Invalid email or password",
+  "loading": "Signing in...",
+  "submit": "Sign In",
+  "backToWebsite": "Back to website",
+  "accountInactive": "This account has been deactivated. Please contact the system administrator."
+},
+"ActivityForm": {
+  "titleEn": "Title (English)",
+  "titleAr": "Title (Arabic)",
+  "descriptionEn": "Description (English)",
+  "descriptionAr": "Description (Arabic)",
+  "categoryEn": "Category (English)",
+  "categoryAr": "Category (Arabic)",
+  "date": "Date",
+  "image": "Activity Image",
+  "chooseImage": "Choose image",
+  "college": "College",
+  "saving": "Saving...",
+  "committee": "Committee",
+  "chooseCommittee": "Choose a committee",
+
+  "committees": {
+    "social-media": "Social Communication Committee",
+    "social": "Social Activities Committee",
+    "sports": "Sports Activities Committee",
+    "cultural": "Cultural Activities Committee",
+    "art": "Art Activities Committee"
+  },
+
+  "plannedActivity": "Link to College Plan",
+  "plannedActivityDescription": "Select the planned activity from the college plan that this activity fulfills.",
+  "choosePlannedActivity": "Select a planned activity (optional)",
+  "loadingPlannedActivities": "Loading planned activities...",
+  "noPlannedActivities": "No available planned activities in the current college plan.",
+  "imagePreview": "Activity image preview"
+},
+"LocalRegionalActivities": {
+  "eyebrow": "STUDENT ACTIVITIES",
+  "title": "Local & Regional Activities",
+  "description": "Explore local and regional student activities, events and initiatives.",
+  "loading": "Loading activities...",
+  "error": "Unable to load activities.",
+  "empty": "No activities are available yet.",
+  "viewActivity": "View Activity"
+},
+"ScientificSocieties": {
+  "eyebrow": "STUDENT ACTIVITIES",
+  "title": "Scientific Societies",
+  "description": "Explore activities and initiatives organized by scientific societies.",
+  "loading": "Loading activities...",
+  "error": "Unable to load activities.",
+  "empty": "No activities are available yet.",
+  "viewActivity": "View Activity"
+},
+"StudentClubs": {
+  "eyebrow": "STUDENT LIFE",
+  "title": "Student Families",
+  "description": "Explore student family activities through the different committees.",
+  "loading": "Loading committees...",
+  "error": "Unable to load activities.",
+  "activitiesCount": "{count, plural, =0 {No activities} =1 {1 activity} other {# activities}}",
+  "viewCommittee": "View committee",
+  "committees": {
+    "social-media": {
+      "title": "Social Communication Committee",
+      "description": "Activities focused on communication, media and student engagement."
+    },
+    "social": {
+      "title": "Social Activities Committee",
+      "description": "Social activities, community initiatives and student participation."
+    },
+    "sports": {
+      "title": "Sports Activities Committee",
+      "description": "Sports events, competitions and student athletic activities."
+    },
+    "cultural": {
+      "title": "Cultural Activities Committee",
+      "description": "Cultural events, knowledge activities and student development."
+    },
+    "art": {
+      "title": "Art Activities Committee",
+      "description": "Artistic activities, creativity, performances and exhibitions."
+    }
+  }
+},
+"StudentClubCategory": {
+  "eyebrow": "STUDENT FAMILIES",
+  "back": "Back to Student Families",
+  "notFound": "Committee not found",
+  "loading": "Loading activities...",
+  "error": "Unable to load activities.",
+  "empty": "No activities are available in this committee yet.",
+  "viewActivity": "View Activity",
+  "categories": {
+    "social-media": {
+      "title": "Social Communication Committee",
+      "description": "Explore activities organized by the Social Communication Committee."
+    },
+    "social": {
+      "title": "Social Activities Committee",
+      "description": "Explore activities organized by the Social Activities Committee."
+    },
+    "sports": {
+      "title": "Sports Activities Committee",
+      "description": "Explore sports activities, events and competitions."
+    },
+    "cultural": {
+      "title": "Cultural Activities Committee",
+      "description": "Explore cultural activities, events and initiatives."
+    },
+    "art": {
+      "title": "Art Activities Committee",
+      "description": "Explore artistic activities, performances and creative initiatives."
+    }
+  }
+}
+}
+
