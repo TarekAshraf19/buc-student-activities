@@ -180,7 +180,7 @@
     "title": "Quick Links",
     "home": "Home",
     "activities": "Activities",
-    "colleges": "Colleges",
+    "colleges": "Faculties",
     "achievements": "Achievements"
   },
 
@@ -294,7 +294,7 @@
   "back": "Back to dashboard",
   "eyebrow": "NEW ACTIVITY",
   "title": "Add New Activity",
-  "description": "Create a new activity for your college.",
+  "description": "Create a new activity for your Faculty.",
   "titleEn": "Activity Title (English)",
   "titleAr": "Activity Title (Arabic)",
   "descriptionEn": "Description (English)",
@@ -306,7 +306,7 @@
   "uploadImage": "Upload image",
   "invalidImage": "Please select a valid image file",
   "imageRequired": "Please select an image",
-  "college": "College",
+  "college": "Faculty",
   "saving": "Saving...",
   "submit": "Create Activity",
   "error": "Something went wrong. Please try again.",
