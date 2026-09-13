@@ -41,3 +41,19 @@ export type CollegePlanInput = {
   semester: CollegePlanSemester;
   items: CollegePlanItem[];
 };
+
+export type CollegePlanHistory = {
+  id: string;
+  collegeId: string;
+
+  planName: string;
+  planUrl: string;
+
+  academicYear: string;
+  semester: CollegePlanSemester;
+  items: CollegePlanItem[];
+
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  archivedAt: Timestamp;
+};

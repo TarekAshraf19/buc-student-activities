@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -14,7 +15,6 @@ import type {
 
 import {
   updateCollegePlan,
-  deleteCollegePlan,
 } from "@/services/college.service";
 
 import {
@@ -22,7 +22,6 @@ import {
 } from "@/services/storage.service";
 
 import {
-  deleteStructuredCollegePlan,
   getStructuredCollegePlan,
   saveStructuredCollegePlan,
 } from "@/services/college-plan.service";
@@ -45,6 +44,24 @@ function createEmptyItem(): CollegePlanItem {
 
     status: "planned",
   };
+}
+
+function getNextSemester(
+  currentSemester: CollegePlanSemester
+): CollegePlanSemester {
+  switch (currentSemester) {
+    case "first":
+      return "second";
+
+    case "second":
+      return "summer";
+
+    case "summer":
+      return "first";
+
+    default:
+      return "first";
+  }
 }
 
 export function useCollegePlan(
@@ -76,23 +93,34 @@ export function useCollegePlan(
   const [saving, setSaving] =
     useState(false);
 
-  const [deleting, setDeleting] =
-    useState(false);
+  const [
+    hasCurrentPlan,
+    setHasCurrentPlan,
+  ] = useState(false);
+
+  const [
+    isStartingNewPlan,
+    setIsStartingNewPlan,
+  ] = useState(false);
+
+  const savedPlanNameRef =
+    useRef("");
+
+  const savedPlanUrlRef =
+    useRef("");
+
+  const savedAcademicYearRef =
+    useRef("");
+
+  const savedSemesterRef =
+    useRef<CollegePlanSemester>(
+      "first"
+    );
 
   useEffect(() => {
     if (!college) {
       return;
     }
-
-    setPlanName(
-      college.planName || ""
-    );
-
-    setPlanUrl(
-      college.planUrl || ""
-    );
-
-    setFile(null);
 
     let cancelled = false;
 
@@ -109,15 +137,52 @@ export function useCollegePlan(
           return;
         }
 
+        const currentPlanName =
+          college!.planName || "";
+
+        const currentPlanUrl =
+          college!.planUrl || "";
+
+        savedPlanNameRef.current =
+          currentPlanName;
+
+        savedPlanUrlRef.current =
+          currentPlanUrl;
+
+        setPlanName(
+          currentPlanName
+        );
+
+        setPlanUrl(
+          currentPlanUrl
+        );
+
+        setFile(null);
+
+        setIsStartingNewPlan(false);
+
         if (!structuredPlan) {
           setAcademicYear("");
           setSemester("first");
+
           setItems([
             createEmptyItem(),
           ]);
 
+          setHasCurrentPlan(
+            Boolean(
+              currentPlanUrl
+            )
+          );
+
           return;
         }
+
+        savedAcademicYearRef.current =
+          structuredPlan.academicYear;
+
+        savedSemesterRef.current =
+          structuredPlan.semester;
 
         setAcademicYear(
           structuredPlan.academicYear
@@ -132,6 +197,8 @@ export function useCollegePlan(
             ? structuredPlan.items
             : [createEmptyItem()]
         );
+
+        setHasCurrentPlan(true);
       } catch (error) {
         console.error(
           "Error loading structured college plan:",
@@ -180,26 +247,36 @@ export function useCollegePlan(
   };
 
   const addItem = () => {
-    setItems((currentItems) => [
-      ...currentItems,
-      createEmptyItem(),
-    ]);
+    setItems(
+      (
+        currentItems
+      ) => [
+        ...currentItems,
+        createEmptyItem(),
+      ]
+    );
   };
 
   const removeItem = (
     itemId: string
   ) => {
-    setItems((currentItems) => {
-      const nextItems =
-        currentItems.filter(
-          (item) =>
-            item.id !== itemId
-        );
+    setItems(
+      (
+        currentItems
+      ) => {
+        const nextItems =
+          currentItems.filter(
+            (
+              item: CollegePlanItem
+            ) =>
+              item.id !== itemId
+          );
 
-      return nextItems.length > 0
-        ? nextItems
-        : [createEmptyItem()];
-    });
+        return nextItems.length > 0
+          ? nextItems
+          : [createEmptyItem()];
+      }
+    );
   };
 
   const updateItem = (
@@ -212,61 +289,162 @@ export function useCollegePlan(
       | "plannedDate",
     value: string
   ) => {
-    setItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== itemId) {
-          return item;
-        }
+    setItems(
+      (
+        currentItems
+      ) =>
+        currentItems.map(
+          (
+            item: CollegePlanItem
+          ) => {
+            if (
+              item.id !== itemId
+            ) {
+              return item;
+            }
 
-        switch (field) {
-          case "titleEn":
-            return {
-              ...item,
-              title: {
-                ...item.title,
-                en: value,
-              },
-            };
+            switch (field) {
+              case "titleEn":
+                return {
+                  ...item,
 
-          case "titleAr":
-            return {
-              ...item,
-              title: {
-                ...item.title,
-                ar: value,
-              },
-            };
+                  title: {
+                    ...item.title,
+                    en: value,
+                  },
+                };
 
-          case "categoryEn":
-            return {
-              ...item,
-              category: {
-                ...item.category,
-                en: value,
-              },
-            };
+              case "titleAr":
+                return {
+                  ...item,
 
-          case "categoryAr":
-            return {
-              ...item,
-              category: {
-                ...item.category,
-                ar: value,
-              },
-            };
+                  title: {
+                    ...item.title,
+                    ar: value,
+                  },
+                };
 
-          case "plannedDate":
-            return {
-              ...item,
-              plannedDate: value,
-            };
+              case "categoryEn":
+                return {
+                  ...item,
 
-          default:
-            return item;
-        }
-      })
+                  category: {
+                    ...item.category,
+                    en: value,
+                  },
+                };
+
+              case "categoryAr":
+                return {
+                  ...item,
+
+                  category: {
+                    ...item.category,
+                    ar: value,
+                  },
+                };
+
+              case "plannedDate":
+                return {
+                  ...item,
+                  plannedDate:
+                    value,
+                };
+
+              default:
+                return item;
+            }
+          }
+        )
     );
   };
+
+  const startNewPlan = () => {
+    if (!hasCurrentPlan) {
+      return;
+    }
+
+    const nextSemester =
+      getNextSemester(
+        savedSemesterRef.current
+      );
+
+    setPlanName("");
+    setPlanUrl("");
+    setFile(null);
+
+    setAcademicYear(
+      savedAcademicYearRef.current
+    );
+
+    setSemester(
+      nextSemester
+    );
+
+    setItems([
+      createEmptyItem(),
+    ]);
+
+    setIsStartingNewPlan(true);
+  };
+
+const cancelNewPlan = () => {
+  setPlanName(
+    savedPlanNameRef.current
+  );
+
+  setPlanUrl(
+    savedPlanUrlRef.current
+  );
+
+  setFile(null);
+
+  setAcademicYear(
+    savedAcademicYearRef.current
+  );
+
+  setSemester(
+    savedSemesterRef.current
+  );
+
+  setIsStartingNewPlan(false);
+
+  if (!college) {
+    return;
+  }
+
+  const collegeId = college.id;
+
+  async function restoreItems() {
+    try {
+      const structuredPlan =
+        await getStructuredCollegePlan(
+          collegeId
+        );
+
+      if (!structuredPlan) {
+        setItems([
+          createEmptyItem(),
+        ]);
+
+        return;
+      }
+
+      setItems(
+        structuredPlan.items.length > 0
+          ? structuredPlan.items
+          : [createEmptyItem()]
+      );
+    } catch (error) {
+      console.error(
+        "Error restoring college plan:",
+        error
+      );
+    }
+  }
+
+  restoreItems();
+};
 
   const savePlan = async () => {
     if (!college) {
@@ -291,46 +469,75 @@ export function useCollegePlan(
         return false;
       }
 
+      const cleanedPlanName =
+        planName.trim();
+
+      const cleanedAcademicYear =
+        academicYear.trim();
+
       const cleanedItems =
-        items.map((item) => ({
-          ...item,
+        items.map(
+          (
+            item: CollegePlanItem
+          ) => ({
+            ...item,
 
-          title: {
-            en: item.title.en.trim(),
-            ar: item.title.ar.trim(),
-          },
+            title: {
+              en:
+                item.title.en.trim(),
 
-          category: {
-            en: item.category.en.trim(),
-            ar: item.category.ar.trim(),
-          },
+              ar:
+                item.title.ar.trim(),
+            },
 
-          plannedDate:
-            item.plannedDate.trim(),
-        }));
+            category: {
+              en:
+                item.category.en.trim(),
 
-      await Promise.all([
-        updateCollegePlan(
-          college.id,
-          planName.trim(),
-          newPlanUrl
-        ),
+              ar:
+                item.category.ar.trim(),
+            },
 
-        saveStructuredCollegePlan({
-          collegeId: college.id,
+            plannedDate:
+              item.plannedDate.trim(),
+          })
+        );
+
+      await saveStructuredCollegePlan(
+        {
+          collegeId:
+            college.id,
+
           academicYear:
-            academicYear.trim(),
+            cleanedAcademicYear,
+
           semester,
-          items: cleanedItems,
-        }),
-      ]);
+
+          items:
+            cleanedItems,
+        },
+
+        savedPlanNameRef.current,
+
+        savedPlanUrlRef.current
+      );
+
+      await updateCollegePlan(
+        college.id,
+        cleanedPlanName,
+        newPlanUrl
+      );
 
       setPlanName(
-        planName.trim()
+        cleanedPlanName
       );
 
       setPlanUrl(
         newPlanUrl
+      );
+
+      setAcademicYear(
+        cleanedAcademicYear
       );
 
       setItems(
@@ -338,6 +545,22 @@ export function useCollegePlan(
       );
 
       setFile(null);
+
+      savedPlanNameRef.current =
+        cleanedPlanName;
+
+      savedPlanUrlRef.current =
+        newPlanUrl;
+
+      savedAcademicYearRef.current =
+        cleanedAcademicYear;
+
+      savedSemesterRef.current =
+        semester;
+
+      setHasCurrentPlan(true);
+
+      setIsStartingNewPlan(false);
 
       return true;
     } catch (error) {
@@ -352,47 +575,6 @@ export function useCollegePlan(
     }
   };
 
-  const removePlan = async () => {
-    if (!college) {
-      return false;
-    }
-
-    try {
-      setDeleting(true);
-
-      await Promise.all([
-        deleteCollegePlan(
-          college.id
-        ),
-
-        deleteStructuredCollegePlan(
-          college.id
-        ),
-      ]);
-
-      setPlanName("");
-      setPlanUrl("");
-      setAcademicYear("");
-      setSemester("first");
-      setItems([
-        createEmptyItem(),
-      ]);
-
-      setFile(null);
-
-      return true;
-    } catch (error) {
-      console.error(
-        "Error deleting college plan:",
-        error
-      );
-
-      return false;
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   return {
     planName,
     planUrl,
@@ -404,7 +586,9 @@ export function useCollegePlan(
 
     loadingPlan,
     saving,
-    deleting,
+
+    hasCurrentPlan,
+    isStartingNewPlan,
 
     changePlanName,
     changeAcademicYear,
@@ -417,7 +601,8 @@ export function useCollegePlan(
     removeItem,
     updateItem,
 
+    startNewPlan,
+    cancelNewPlan,
     savePlan,
-    removePlan,
   };
 }

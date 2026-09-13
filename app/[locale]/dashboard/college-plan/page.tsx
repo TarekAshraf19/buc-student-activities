@@ -48,7 +48,9 @@ export default function CollegePlanPage() {
 
     loadingPlan,
     saving,
-    deleting,
+
+    hasCurrentPlan,
+    isStartingNewPlan,
 
     changePlanName,
     changeAcademicYear,
@@ -61,8 +63,9 @@ export default function CollegePlanPage() {
     removeItem,
     updateItem,
 
+    startNewPlan,
+    cancelNewPlan,
     savePlan,
-    removePlan,
   } = useCollegePlan(college);
 
   const BackArrow =
@@ -171,31 +174,36 @@ export default function CollegePlanPage() {
     );
   };
 
-  const handleDelete =
-    async () => {
+  const handleStartNewPlan =
+    () => {
       const confirmed =
         window.confirm(
-          t("deleteConfirm")
+          t(
+            "startNewSemesterConfirm"
+          )
         );
 
       if (!confirmed) {
         return;
       }
 
-      const success =
-        await removePlan();
+      startNewPlan();
+    };
 
-      if (!success) {
-        alert(
-          t("deleteError")
+  const handleCancelNewPlan =
+    () => {
+      const confirmed =
+        window.confirm(
+          t(
+            "cancelNewSemesterConfirm"
+          )
         );
 
+      if (!confirmed) {
         return;
       }
 
-      alert(
-        t("deleteSuccess")
-      );
+      cancelNewPlan();
     };
 
   if (loading) {
@@ -268,10 +276,17 @@ export default function CollegePlanPage() {
           items={items}
 
           saving={saving}
-          deleting={deleting}
 
           loadingPlan={
             loadingPlan
+          }
+
+          hasCurrentPlan={
+            hasCurrentPlan
+          }
+
+          isStartingNewPlan={
+            isStartingNewPlan
           }
 
           onPlanNameChange={
@@ -306,8 +321,12 @@ export default function CollegePlanPage() {
             handleSave
           }
 
-          onDelete={
-            handleDelete
+          onStartNewPlan={
+            handleStartNewPlan
+          }
+
+          onCancelNewPlan={
+            handleCancelNewPlan
           }
         />
       </div>

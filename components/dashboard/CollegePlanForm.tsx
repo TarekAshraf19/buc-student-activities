@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  FilePlus2,
   FileText,
   Plus,
   Save,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 
 import { useTranslations } from "next-intl";
@@ -32,8 +34,10 @@ type CollegePlanFormProps = {
   items: CollegePlanItem[];
 
   saving: boolean;
-  deleting: boolean;
   loadingPlan: boolean;
+
+  hasCurrentPlan: boolean;
+  isStartingNewPlan: boolean;
 
   onPlanNameChange: (
     value: string
@@ -67,7 +71,9 @@ type CollegePlanFormProps = {
     event: React.FormEvent<HTMLFormElement>
   ) => void;
 
-  onDelete: () => void;
+  onStartNewPlan: () => void;
+
+  onCancelNewPlan: () => void;
 };
 
 export default function CollegePlanForm({
@@ -80,8 +86,10 @@ export default function CollegePlanForm({
   items,
 
   saving,
-  deleting,
   loadingPlan,
+
+  hasCurrentPlan,
+  isStartingNewPlan,
 
   onPlanNameChange,
   onAcademicYearChange,
@@ -94,21 +102,40 @@ export default function CollegePlanForm({
   onUpdateItem,
 
   onSave,
-  onDelete,
+
+  onStartNewPlan,
+  onCancelNewPlan,
 }: CollegePlanFormProps) {
   const t =
     useTranslations("CollegePlan");
 
   const isWorking =
     saving ||
-    deleting ||
     loadingPlan;
+
+  const periodLocked =
+    hasCurrentPlan &&
+    !isStartingNewPlan;
 
   return (
     <form
       onSubmit={onSave}
       className="mt-12 rounded-[2rem] bg-white p-8 shadow-sm md:p-10"
     >
+      {isStartingNewPlan && (
+        <div className="mb-8 rounded-2xl border border-[var(--secondary)] bg-[var(--background)] p-5">
+          <p className="font-bold text-[var(--primary)]">
+            {t("newSemesterNotice")}
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+            {t(
+              "newSemesterDescription"
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Plan Name */}
       <div>
         <label className="text-sm font-semibold text-[var(--primary)]">
@@ -147,9 +174,12 @@ export default function CollegePlanForm({
             placeholder={t(
               "academicYearPlaceholder"
             )}
-            disabled={isWorking}
+            disabled={
+              isWorking ||
+              periodLocked
+            }
             required
-            className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
+            className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70"
           />
         </div>
 
@@ -166,8 +196,11 @@ export default function CollegePlanForm({
                   .value as CollegePlanSemester
               )
             }
-            disabled={isWorking}
-            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
+            disabled={
+              isWorking ||
+              periodLocked
+            }
+            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70"
           >
             <option value="first">
               {t("firstSemester")}
@@ -213,7 +246,10 @@ export default function CollegePlanForm({
 
         <div className="mt-6 space-y-6">
           {items.map(
-            (item, index) => (
+            (
+              item: CollegePlanItem,
+              index
+            ) => (
               <div
                 key={item.id}
                 className="rounded-2xl border border-gray-200 p-5 md:p-6"
@@ -247,7 +283,9 @@ export default function CollegePlanForm({
                 <div className="mt-5 grid gap-5 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t("activityTitleEn")}
+                      {t(
+                        "activityTitleEn"
+                      )}
                     </label>
 
                     <input
@@ -275,7 +313,9 @@ export default function CollegePlanForm({
 
                   <div>
                     <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t("activityTitleAr")}
+                      {t(
+                        "activityTitleAr"
+                      )}
                     </label>
 
                     <input
@@ -431,37 +471,42 @@ export default function CollegePlanForm({
       </div>
 
       {/* Current PDF */}
-      {planUrl && (
-        <div className="mt-8 rounded-2xl bg-[var(--background)] p-6">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[var(--secondary)]">
-                <FileText className="h-6 w-6" />
+      {planUrl &&
+        !isStartingNewPlan && (
+          <div className="mt-8 rounded-2xl bg-[var(--background)] p-6">
+            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[var(--secondary)]">
+                  <FileText className="h-6 w-6" />
+                </div>
+
+                <div>
+                  <p className="font-bold text-[var(--primary)]">
+                    {planName ||
+                      t(
+                        "currentPlan"
+                      )}
+                  </p>
+
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    {t(
+                      "currentPlan"
+                    )}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <p className="font-bold text-[var(--primary)]">
-                  {planName ||
-                    t("currentPlan")}
-                </p>
-
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  {t("currentPlan")}
-                </p>
-              </div>
+              <a
+                href={planUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-bold text-[var(--secondary)] transition hover:opacity-70"
+              >
+                {t("viewPlan")}
+              </a>
             </div>
-
-            <a
-              href={planUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-bold text-[var(--secondary)] transition hover:opacity-70"
-            >
-              {t("viewPlan")}
-            </a>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Actions */}
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -477,18 +522,38 @@ export default function CollegePlanForm({
             : t("save")}
         </button>
 
-        {planUrl && (
+        {hasCurrentPlan &&
+          !isStartingNewPlan && (
+            <button
+              type="button"
+              onClick={
+                onStartNewPlan
+              }
+              disabled={isWorking}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--secondary)] px-6 py-4 font-semibold text-[var(--secondary)] transition hover:bg-[var(--background)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FilePlus2 className="h-5 w-5" />
+
+              {t(
+                "startNewSemester"
+              )}
+            </button>
+          )}
+
+        {isStartingNewPlan && (
           <button
             type="button"
-            onClick={onDelete}
+            onClick={
+              onCancelNewPlan
+            }
             disabled={isWorking}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-6 py-4 font-semibold text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-4 font-semibold text-[var(--muted)] transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Trash2 className="h-5 w-5" />
+            <X className="h-5 w-5" />
 
-            {deleting
-              ? t("deleting")
-              : t("delete")}
+            {t(
+              "cancelNewSemester"
+            )}
           </button>
         )}
       </div>

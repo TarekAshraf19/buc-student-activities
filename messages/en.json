@@ -9,7 +9,7 @@
   "subtitle": "Student Activities Platform",
   "home": "Home",
   "activities": "Activities",
-  "colleges": "Colleges",
+  "colleges": "Faculties",
   "localRegionalActivities": "Local & Regional Activities",
   "login": "Login",
   "dashboard": "Dashboard",
@@ -18,7 +18,7 @@
   "arabic": "العربية",
   "english": "English",
   "entities": {
-  "college": "College",
+  "college": "Faculties",
   "localRegional": "Local & Regional Activities",
   "studentClub": "Student Family",
   "scientificSociety": "Scientific Society"
@@ -49,7 +49,7 @@
       }
     },
     "explore": "Explore Activities",
-    "colleges": "Explore Colleges",
+    "colleges": "Explore Faculties",
     "goToSlide": "Go to slide {number}"
   },
 
@@ -109,14 +109,14 @@
     }
   },
   "Colleges": {
-    "eyebrow": "OUR COLLEGES",
-    "title": "Explore Our Colleges",
-    "description": "Discover the diverse colleges at Badr University in Cairo and explore the student activities happening across campus.",
-    "explore": "Explore College",
-    "viewAll": "View All Colleges",
-    "loading": "Loading colleges...",
-    "error": "Unable to load colleges.",
-    "empty": "No colleges available yet.",  
+    "eyebrow": "OUR FACULTIES",
+    "title": "Explore Our Faculties",
+    "description": "Discover the diverse faculties at Badr University in Cairo and explore the student activities happening across campus.",
+    "explore": "Explore Faculty",
+    "viewAll": "View All Faculties",
+    "loading": "Loading faculties...",
+    "error": "Unable to load faculties.",
+    "empty": "No faculties available yet.",
 
     "items": {
       "1": {
@@ -225,7 +225,7 @@
   "section": "Activity Section",
   "committee": "Committee",
   "scopes": {
-  "college": "College",
+  "college": "Faculties",
   "localRegional": "Local & Regional Activities",
   "studentClub": "Student Families",
   "scientificSociety": "Scientific Society"
@@ -239,41 +239,41 @@
   }
 },
 "CollegesPage": {
-  "eyebrow": "OUR COLLEGES",
-  "title": "Explore BUC Colleges",
-  "description": "Discover the different colleges at Badr University in Cairo and explore their activities and student life.",
-  "college": "BUC College",
-  "viewCollege": "View College",
-  "loading": "Loading colleges...",
+  "eyebrow": "OUR FACULTIES",
+  "title": "Explore BUC Faculties",
+  "description": "Discover the different faculties at Badr University in Cairo and explore their activities and student life.",
+  "college": "BUC Faculty",
+  "viewCollege": "View Faculty",
+  "loading": "Loading faculties...",
   "error": "Something went wrong. Please try again.",
-  "empty": "No colleges available yet."
+  "empty": "No faculties available yet."
 },
 "CollegeDetails": {
-  "loading": "Loading college...",
-  "notFound": "College not found",
-  "notFoundDescription": "The college you are looking for does not exist or may have been removed.",
-  "back": "Back to Colleges",
-  "college": "BUC College",
-  "about": "About the College",
+  "loading": "Loading faculty...",
+  "notFound": "Faculty not found",
+  "notFoundDescription": "The faculty you are looking for does not exist or may have been removed.",
+  "back": "Back to Faculties",
+  "college": "BUC Faculty",
+  "about": "About the Faculty",
   "activitiesEyebrow": "STUDENT LIFE",
   "activitiesTitle": "Latest Activities",
   "viewAllActivities": "View All Activities",
   "viewActivity": "View Activity",
-  "noActivities": "No activities have been added for this college yet."
+  "noActivities": "No activities have been added for this faculty yet."
 },
 "Dashboard": {
   "loading": "Loading dashboard...",
-  "eyebrow": "COLLEGE DASHBOARD",
+  "eyebrow": "FACULTY DASHBOARD",
   "title": "Dashboard",
   "addActivity": "Add Activity",
   "welcome": "Welcome back!",
-  "description": "From here, you can manage your college activities and share new events with BUC students.",
+  "description": "From here, you can manage your faculty activities and share new events with BUC students.",
   "yourActivities": "Your Activities",
   "noActivities": "No activities yet",
   "noActivitiesDescription": "You haven't published any activities yet.",
   "edit": "Edit Activity",
-  "noCollege": "No college found",
-  "noCollegeDescription": "Your account is not connected to a college.",
+  "noCollege": "No faculty found",
+  "noCollegeDescription": "Your account is not connected to a faculty.",
   "collegePlan": "College Plan",
   "delete": "Delete",
   "deleting": "Deleting...",
@@ -410,7 +410,13 @@
 
   "deleteConfirm": "Are you sure you want to delete the college plan?",
   "deleteSuccess": "College plan deleted successfully.",
-  "deleteError": "Something went wrong while deleting the college plan."
+  "deleteError": "Something went wrong while deleting the college plan.",
+  "startNewSemester": "Start New Semester",
+  "startNewSemesterConfirm": "Start a new semester plan? The current plan will be archived when the new plan is saved.",
+  "cancelNewSemester": "Cancel",
+  "cancelNewSemesterConfirm": "Cancel the new semester plan and return to the current plan?",
+  "newSemesterNotice": "New Semester Plan",
+  "newSemesterDescription": "Create the new plan below. When you save it, the current plan will be moved to the plan history automatically."
 },
 "Login": {
   "title": "Welcome Back",
