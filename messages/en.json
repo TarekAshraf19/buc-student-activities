@@ -59,12 +59,12 @@
   "description": "Explore the different areas of student life and discover activities, initiatives, student families, and scientific societies at BUC.",
   "items": {
     "1": {
-      "title": "Events & Activities",
-      "description": "Discover all student activities and events across the university."
+      "title": "Faculty Events & Activities",
+      "description": "Discover events, activities, and initiatives organized by each faculty."
     },
     "2": {
-      "title": "Local & Regional Activities",
-      "description": "Explore local and regional activities, events, and initiatives."
+      "title": "Local & Regional University Activities",
+      "description": "Explore university-wide activities, events, and initiatives at the local and regional level."
     },
     "3": {
       "title": "Student Families",
