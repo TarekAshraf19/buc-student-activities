@@ -274,7 +274,7 @@
   "edit": "Edit Activity",
   "noCollege": "No faculty found",
   "noCollegeDescription": "Your account is not connected to a faculty.",
-  "collegePlan": "College Plan",
+  "collegePlan": "Faculties Plan",
   "delete": "Delete",
   "deleting": "Deleting...",
   "deleteConfirm": "Are you sure you want to delete this activity? This action cannot be undone.",
@@ -283,7 +283,7 @@
   "noEntityDescription": "This account is not linked to an activity section.",
   "activitiesError": "Failed to load activities.",
   "entities": {
-  "college": "College",
+  "college": "Faculty",
   "localRegional": "Local & Regional Activities",
   "scientificSociety": "Scientific Society",
   "studentClub": "Student Families"
