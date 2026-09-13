@@ -356,14 +356,14 @@
 },
 "CollegePlan": {
   "loading": "Loading...",
-  "collegeNotFound": "College not found.",
+  "collegeNotFound": "Faculty not found.",
   "back": "Back to Dashboard",
 
-  "eyebrow": "College Plan",
-  "title": "College Plan",
-  "description": "Manage the college plan, planned activities, and plan document.",
+  "eyebrow": "Faculty Plan",
+  "title": "Faculty Plan",
+  "description": "Manage the faculty plan, planned activities, and plan document.",
 
-  "currentPlan": "Current College Plan",
+  "currentPlan": "Current Faculty Plan",
   "viewPlan": "View Plan",
 
   "planName": "Plan Name",
@@ -382,7 +382,7 @@
   "summerSemester": "Summer Semester",
 
   "plannedActivities": "Planned Activities",
-  "plannedActivitiesDescription": "Add the activities included in the college plan.",
+  "plannedActivitiesDescription": "Add the activities included in the faculty plan.",
   "plannedActivity": "Planned Activity",
   "addActivity": "Add Activity",
   "removeActivity": "Remove Activity",
@@ -405,12 +405,12 @@
   "fileRequired": "Please select a PDF file.",
   "plannedActivityRequired": "Please complete all planned activity fields.",
 
-  "saveSuccess": "College plan saved successfully.",
-  "saveError": "Something went wrong while saving the college plan.",
+  "saveSuccess": "Faculty plan saved successfully.",
+  "saveError": "Something went wrong while saving the faculty plan.",
 
-  "deleteConfirm": "Are you sure you want to delete the college plan?",
-  "deleteSuccess": "College plan deleted successfully.",
-  "deleteError": "Something went wrong while deleting the college plan.",
+  "deleteConfirm": "Are you sure you want to delete the faculty plan?",
+  "deleteSuccess": "Faculty plan deleted successfully.",
+  "deleteError": "Something went wrong while deleting the faculty plan.",
   "startNewSemester": "Start New Semester",
   "startNewSemesterConfirm": "Start a new semester plan? The current plan will be archived when the new plan is saved.",
   "cancelNewSemester": "Cancel",
@@ -420,7 +420,7 @@
 },
 "Login": {
   "title": "Welcome Back",
-  "description": "Sign in to access your college dashboard",
+  "description": "Sign in to access your faculty dashboard",
   "emailLabel": "Email Address",
   "emailPlaceholder": "example@buc.edu.eg",
   "passwordLabel": "Password",
@@ -440,7 +440,7 @@
   "date": "Date",
   "image": "Activity Image",
   "chooseImage": "Choose image",
-  "college": "College",
+  "college": "Faculty",
   "saving": "Saving...",
   "committee": "Committee",
   "chooseCommittee": "Choose a committee",
@@ -453,11 +453,11 @@
     "art": "Art Activities Committee"
   },
 
-  "plannedActivity": "Link to College Plan",
-  "plannedActivityDescription": "Select the planned activity from the college plan that this activity fulfills.",
+  "plannedActivity": "Link to Faculty Plan",
+  "plannedActivityDescription": "Select the planned activity from the faculty plan that this activity fulfills.",
   "choosePlannedActivity": "Select a planned activity (optional)",
   "loadingPlannedActivities": "Loading planned activities...",
-  "noPlannedActivities": "No available planned activities in the current college plan.",
+  "noPlannedActivities": "No available planned activities in the current faculty plan.",
   "imagePreview": "Activity image preview"
 },
 "LocalRegionalActivities": {
