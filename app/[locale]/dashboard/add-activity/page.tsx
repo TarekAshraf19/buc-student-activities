@@ -80,18 +80,50 @@ export default function AddActivityPage() {
   } =
     useLocale();
 
+  /*
+   * =========================================================
+   * AUTH
+   * =========================================================
+   */
+
   const {
     user,
-    loading: authLoading,
+    loading:
+      authLoading,
   } =
     useAuth();
 
+  /*
+   * =========================================================
+   * CURRENT DASHBOARD USER
+   * =========================================================
+   */
+
   const {
     entity,
-    loading: entityLoading,
-    error: entityError,
+    loading:
+      entityLoading,
+    error:
+      entityError,
   } =
     useCurrentEntity();
+
+  /*
+   * Both uploader and dean
+   * are allowed to add activities.
+   */
+
+  const canAddActivity =
+    entity?.role ===
+      "uploader" ||
+    entity?.role ===
+      "dean";
+
+  /*
+   * =========================================================
+   * SCHOOL PLAN
+   * =========================================================
+   */
 
   const isCollege =
     entity?.scopeType ===
@@ -109,6 +141,12 @@ export default function AddActivityPage() {
         ? entity.scopeId
         : undefined
     );
+
+  /*
+   * =========================================================
+   * FORM STATE
+   * =========================================================
+   */
 
   const [
     form,
@@ -147,6 +185,12 @@ export default function AddActivityPage() {
     authLoading ||
     entityLoading;
 
+  /*
+   * =========================================================
+   * FORM CHANGE
+   * =========================================================
+   */
+
   const handleChange = (
     field:
       keyof ActivityFormData,
@@ -162,6 +206,12 @@ export default function AddActivityPage() {
       })
     );
   };
+
+  /*
+   * =========================================================
+   * IMAGE
+   * =========================================================
+   */
 
   const handleImageChange = (
     event:
@@ -206,6 +256,12 @@ export default function AddActivityPage() {
     );
   };
 
+  /*
+   * =========================================================
+   * SUBMIT
+   * =========================================================
+   */
+
   const handleSubmit = async (
     event:
       React.FormEvent<HTMLFormElement>
@@ -220,9 +276,21 @@ export default function AddActivityPage() {
       return;
     }
 
-    if (!entity) {
+    /*
+     * Account must have a valid
+     * dashboardUsers mapping.
+     */
+
+    if (
+      !entity ||
+      !canAddActivity
+    ) {
       return;
     }
+
+    /*
+     * Image is required.
+     */
 
     if (!imageFile) {
       alert(
@@ -233,6 +301,11 @@ export default function AddActivityPage() {
 
       return;
     }
+
+    /*
+     * Student Activities requires
+     * a committee/category.
+     */
 
     if (
       entity.scopeType ===
@@ -253,11 +326,24 @@ export default function AddActivityPage() {
     );
 
     try {
+      /*
+       * Upload image inside the
+       * current entity scope.
+       */
+
       const imageUrl =
         await uploadActivityImage(
           imageFile,
           entity.scopeId
         );
+
+      /*
+       * Activity is always created
+       * inside the logged-in user's scope.
+       *
+       * createActivity() is responsible
+       * for forcing status = "pending".
+       */
 
       await createActivity(
         {
@@ -310,6 +396,11 @@ export default function AddActivityPage() {
             : {}),
         },
 
+        /*
+         * School activities can optionally
+         * be linked to a planned activity.
+         */
+
         entity.scopeType ===
           "college" &&
         form.plannedItemId
@@ -327,7 +418,9 @@ export default function AddActivityPage() {
       );
 
       alert(
-        t("error")
+        t(
+          "error"
+        )
       );
     } finally {
       setSaving(
@@ -335,6 +428,12 @@ export default function AddActivityPage() {
       );
     }
   };
+
+  /*
+   * =========================================================
+   * LOADING
+   * =========================================================
+   */
 
   if (loading) {
     return (
@@ -352,9 +451,16 @@ export default function AddActivityPage() {
     return null;
   }
 
+  /*
+   * =========================================================
+   * INVALID DASHBOARD ACCOUNT
+   * =========================================================
+   */
+
   if (
     entityError ||
-    !entity
+    !entity ||
+    !canAddActivity
   ) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6 pt-24">
@@ -367,9 +473,16 @@ export default function AddActivityPage() {
     );
   }
 
+  /*
+   * =========================================================
+   * PAGE
+   * =========================================================
+   */
+
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 pb-20 pt-32">
       <div className="mx-auto max-w-4xl">
+
         <Link
           href={`/${locale}/dashboard`}
           className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)] transition hover:text-[var(--secondary)]"
@@ -408,7 +521,9 @@ export default function AddActivityPage() {
         </div>
 
         <ActivityForm
-          form={form}
+          form={
+            form
+          }
 
           onChange={
             handleChange

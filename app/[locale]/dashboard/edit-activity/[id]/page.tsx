@@ -34,6 +34,10 @@ import {
 } from "@/hooks/useLocale";
 
 import {
+  useCurrentEntity,
+} from "@/hooks/useCurrentEntity";
+
+import {
   useEditActivity,
 } from "@/hooks/useEditActivity";
 
@@ -72,6 +76,12 @@ export default function EditActivityPage() {
   } =
     useLocale();
 
+  /*
+   * =========================================================
+   * AUTH
+   * =========================================================
+   */
+
   const {
     user,
     loading:
@@ -79,23 +89,64 @@ export default function EditActivityPage() {
   } =
     useAuth();
 
+  /*
+   * =========================================================
+   * CURRENT DASHBOARD USER
+   * =========================================================
+   *
+   * هنا بنعرف:
+   * - role
+   * - scopeType
+   * - scopeId
+   *
+   * عشان نسمح للـ Dean فقط بالـ Edit.
+   */
+
+  const {
+    entity,
+    loading:
+      entityLoading,
+    error:
+      entityError,
+  } =
+    useCurrentEntity();
+
+  /*
+   * =========================================================
+   * ACTIVITY ID
+   * =========================================================
+   */
+
   const activityId =
     typeof params.id ===
     "string"
       ? params.id
       : "";
 
+  /*
+   * =========================================================
+   * ACTIVITY
+   * =========================================================
+   */
+
   const {
     activity,
     loading:
       activityLoading,
     saving,
-    error,
+    error:
+      activityError,
     saveActivity,
   } =
     useEditActivity(
       activityId
     );
+
+  /*
+   * =========================================================
+   * FORM STATE
+   * =========================================================
+   */
 
   const [
     form,
@@ -130,6 +181,40 @@ export default function EditActivityPage() {
       ? ArrowRight
       : ArrowLeft;
 
+  /*
+   * =========================================================
+   * PERMISSIONS
+   * =========================================================
+   */
+
+  const isDean =
+    entity?.role ===
+    "dean";
+
+  /*
+   * لازم Activity تكون من نفس
+   * الـ scope بتاع الـ Dean.
+   *
+   * مثال:
+   * Business Dean
+   * لا يستطيع تعديل Nursing Activity.
+   */
+  const belongsToCurrentEntity =
+    Boolean(
+      activity &&
+        entity &&
+        activity.scopeType ===
+          entity.scopeType &&
+        activity.scopeId ===
+          entity.scopeId
+    );
+
+  /*
+   * =========================================================
+   * LOGIN PROTECTION
+   * =========================================================
+   */
+
   useEffect(() => {
     if (
       !authLoading &&
@@ -145,6 +230,100 @@ export default function EditActivityPage() {
     locale,
     router,
   ]);
+
+  /*
+   * =========================================================
+   * ROLE PROTECTION
+   * =========================================================
+   *
+   * Uploader ممنوع يدخل Edit
+   * حتى لو كتب الـ URL بنفسه.
+   */
+
+  useEffect(() => {
+    if (
+      authLoading ||
+      entityLoading
+    ) {
+      return;
+    }
+
+    if (!user) {
+      return;
+    }
+
+    if (
+      entityError ||
+      !entity ||
+      entity.role !==
+        "dean"
+    ) {
+      router.replace(
+        `/${locale}/dashboard`
+      );
+    }
+  }, [
+    authLoading,
+    entityLoading,
+    entityError,
+    user,
+    entity,
+    locale,
+    router,
+  ]);
+
+  /*
+   * =========================================================
+   * SCOPE PROTECTION
+   * =========================================================
+   *
+   * حتى الـ Dean نفسه ممنوع يعدل
+   * Activity تابعة لـ School أخرى.
+   */
+
+  useEffect(() => {
+    if (
+      authLoading ||
+      entityLoading ||
+      activityLoading
+    ) {
+      return;
+    }
+
+    if (
+      !user ||
+      !entity ||
+      !activity
+    ) {
+      return;
+    }
+
+    if (
+      activity.scopeType !==
+        entity.scopeType ||
+      activity.scopeId !==
+        entity.scopeId
+    ) {
+      router.replace(
+        `/${locale}/dashboard`
+      );
+    }
+  }, [
+    authLoading,
+    entityLoading,
+    activityLoading,
+    user,
+    entity,
+    activity,
+    locale,
+    router,
+  ]);
+
+  /*
+   * =========================================================
+   * LOAD FORM
+   * =========================================================
+   */
 
   useEffect(() => {
     if (!activity) {
@@ -186,6 +365,12 @@ export default function EditActivityPage() {
     );
   }, [activity]);
 
+  /*
+   * =========================================================
+   * FORM CHANGE
+   * =========================================================
+   */
+
   const handleChange = (
     field:
       keyof ActivityFormData,
@@ -195,11 +380,18 @@ export default function EditActivityPage() {
     setForm(
       (current) => ({
         ...current,
+
         [field]:
           value,
       })
     );
   };
+
+  /*
+   * =========================================================
+   * IMAGE
+   * =========================================================
+   */
 
   const handleImageChange = (
     event:
@@ -244,15 +436,30 @@ export default function EditActivityPage() {
     );
   };
 
+  /*
+   * =========================================================
+   * SUBMIT
+   * =========================================================
+   */
+
   const handleSubmit = async (
     event:
       React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
+    /*
+     * حماية على مستوى الصفحة نفسها.
+     *
+     * Firestore Rules هتكون الحماية
+     * النهائية بعد كده.
+     */
     if (
       !user ||
-      !activity
+      !activity ||
+      !entity ||
+      !isDean ||
+      !belongsToCurrentEntity
     ) {
       return;
     }
@@ -275,6 +482,10 @@ export default function EditActivityPage() {
       let imageUrl =
         activity.image;
 
+      /*
+       * Upload new image
+       * only if Dean selected one.
+       */
       if (imageFile) {
         setUploading(
           true
@@ -360,8 +571,15 @@ export default function EditActivityPage() {
     }
   };
 
+  /*
+   * =========================================================
+   * LOADING
+   * =========================================================
+   */
+
   const loading =
     authLoading ||
+    entityLoading ||
     activityLoading;
 
   const isSaving =
@@ -384,8 +602,30 @@ export default function EditActivityPage() {
     return null;
   }
 
+  /*
+   * =========================================================
+   * UPLOADER / INVALID ACCOUNT
+   * =========================================================
+   *
+   * redirect effect هيبعته Dashboard.
+   */
+
   if (
-    error ||
+    entityError ||
+    !entity ||
+    !isDean
+  ) {
+    return null;
+  }
+
+  /*
+   * =========================================================
+   * ACTIVITY NOT FOUND
+   * =========================================================
+   */
+
+  if (
+    activityError ||
     !activity
   ) {
     return (
@@ -412,9 +652,28 @@ export default function EditActivityPage() {
     );
   }
 
+  /*
+   * =========================================================
+   * WRONG SCHOOL
+   * =========================================================
+   */
+
+  if (
+    !belongsToCurrentEntity
+  ) {
+    return null;
+  }
+
+  /*
+   * =========================================================
+   * PAGE
+   * =========================================================
+   */
+
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 pb-20 pt-32">
       <div className="mx-auto max-w-4xl">
+
         <Link
           href={`/${locale}/dashboard`}
           className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)] transition hover:text-[var(--secondary)]"

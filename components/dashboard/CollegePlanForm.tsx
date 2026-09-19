@@ -1,28 +1,25 @@
 "use client";
 
+import Link from "next/link";
+
 import {
-  FilePlus2,
+  CalendarDays,
+  CheckCircle2,
+  Eye,
   FileText,
   Plus,
-  Save,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 
-import { useTranslations } from "next-intl";
+import {
+  useTranslations,
+} from "next-intl";
 
 import type {
   CollegePlanItem,
   CollegePlanSemester,
 } from "@/types/college-plan";
-
-type ItemField =
-  | "titleEn"
-  | "titleAr"
-  | "categoryEn"
-  | "categoryAr"
-  | "plannedDate";
 
 type CollegePlanFormProps = {
   planName: string;
@@ -39,6 +36,8 @@ type CollegePlanFormProps = {
   hasCurrentPlan: boolean;
   isStartingNewPlan: boolean;
 
+  readOnly: boolean;
+
   onPlanNameChange: (
     value: string
   ) => void;
@@ -52,7 +51,8 @@ type CollegePlanFormProps = {
   ) => void;
 
   onFileChange: (
-    event: React.ChangeEvent<HTMLInputElement>
+    event:
+      React.ChangeEvent<HTMLInputElement>
   ) => void;
 
   onAddItem: () => void;
@@ -63,12 +63,19 @@ type CollegePlanFormProps = {
 
   onUpdateItem: (
     itemId: string,
-    field: ItemField,
+    field:
+      | "titleEn"
+      | "titleAr"
+      | "categoryEn"
+      | "categoryAr"
+      | "plannedDate"
+      | "status",
     value: string
   ) => void;
 
   onSave: (
-    event: React.FormEvent<HTMLFormElement>
+    event:
+      React.FormEvent<HTMLFormElement>
   ) => void;
 
   onStartNewPlan: () => void;
@@ -91,6 +98,8 @@ export default function CollegePlanForm({
   hasCurrentPlan,
   isStartingNewPlan,
 
+  readOnly,
+
   onPlanNameChange,
   onAcademicYearChange,
   onSemesterChange,
@@ -107,456 +116,686 @@ export default function CollegePlanForm({
   onCancelNewPlan,
 }: CollegePlanFormProps) {
   const t =
-    useTranslations("CollegePlan");
+    useTranslations(
+      "CollegePlan"
+    );
 
   const isWorking =
     saving ||
     loadingPlan;
 
-  const periodLocked =
-    hasCurrentPlan &&
-    !isStartingNewPlan;
+  const disabled =
+    isWorking ||
+    readOnly;
 
   return (
     <form
-      onSubmit={onSave}
-      className="mt-12 rounded-[2rem] bg-white p-8 shadow-sm md:p-10"
-    >
-      {isStartingNewPlan && (
-        <div className="mb-8 rounded-2xl border border-[var(--secondary)] bg-[var(--background)] p-5">
-          <p className="font-bold text-[var(--primary)]">
-            {t("newSemesterNotice")}
-          </p>
+      onSubmit={(event) => {
+        if (readOnly) {
+          event.preventDefault();
+          return;
+        }
 
-          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            {t(
-              "newSemesterDescription"
-            )}
-          </p>
+        onSave(event);
+      }}
+      className="mt-10 space-y-8"
+    >
+      {/* ============================================= */}
+      {/* READ ONLY NOTICE */}
+      {/* ============================================= */}
+
+      {readOnly && (
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--background)] text-[var(--secondary)]">
+              <Eye className="h-5 w-5" />
+            </div>
+
+            <div>
+              <h2 className="font-bold text-[var(--primary)]">
+                {t(
+                  "readOnlyTitle"
+                )}
+              </h2>
+
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                {t(
+                  "readOnlyDescription"
+                )}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Plan Name */}
-      <div>
-        <label className="text-sm font-semibold text-[var(--primary)]">
-          {t("planName")}
-        </label>
+      {/* ============================================= */}
+      {/* PLAN INFORMATION */}
+      {/* ============================================= */}
 
-        <input
-          type="text"
-          value={planName}
-          onChange={(event) =>
-            onPlanNameChange(
-              event.target.value
-            )
-          }
-          disabled={isWorking}
-          required
-          className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-        />
-      </div>
+      <section className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--background)] text-[var(--secondary)]">
+            <FileText className="h-6 w-6" />
+          </div>
 
-      {/* Academic Year + Semester */}
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-[var(--primary)]">
-            {t("academicYear")}
-          </label>
-
-          <input
-            type="text"
-            value={academicYear}
-            onChange={(event) =>
-              onAcademicYearChange(
-                event.target.value
-              )
-            }
-            placeholder={t(
-              "academicYearPlaceholder"
-            )}
-            disabled={
-              isWorking ||
-              periodLocked
-            }
-            required
-            className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-semibold text-[var(--primary)]">
-            {t("semester")}
-          </label>
-
-          <select
-            value={semester}
-            onChange={(event) =>
-              onSemesterChange(
-                event.target
-                  .value as CollegePlanSemester
-              )
-            }
-            disabled={
-              isWorking ||
-              periodLocked
-            }
-            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70"
-          >
-            <option value="first">
-              {t("firstSemester")}
-            </option>
-
-            <option value="second">
-              {t("secondSemester")}
-            </option>
-
-            <option value="summer">
-              {t("summerSemester")}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      {/* Planned Activities */}
-      <div className="mt-10">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-xl font-bold text-[var(--primary)]">
-              {t("plannedActivities")}
+              {t(
+                "planInformation"
+              )}
             </h2>
 
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
               {t(
-                "plannedActivitiesDescription"
+                "planInformationDescription"
               )}
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={onAddItem}
-            disabled={isWorking}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--secondary)] px-4 py-3 text-sm font-bold text-[var(--secondary)] transition hover:bg-[var(--background)] disabled:opacity-60"
-          >
-            <Plus className="h-4 w-4" />
-
-            {t("addActivity")}
-          </button>
         </div>
 
-        <div className="mt-6 space-y-6">
-          {items.map(
-            (
-              item: CollegePlanItem,
-              index
-            ) => (
-              <div
-                key={item.id}
-                className="rounded-2xl border border-gray-200 p-5 md:p-6"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-bold text-[var(--primary)]">
-                    {t(
-                      "plannedActivity"
-                    )}{" "}
-                    {index + 1}
-                  </h3>
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
+          {/* PLAN NAME */}
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onRemoveItem(
-                        item.id
-                      )
-                    }
-                    disabled={isWorking}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-red-500 transition hover:bg-red-50 disabled:opacity-60"
-                    aria-label={t(
-                      "removeActivity"
-                    )}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+          <div className="md:col-span-2">
+            <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+              {t(
+                "planName"
+              )}
+            </label>
 
-                {/* Titles */}
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t(
-                        "activityTitleEn"
-                      )}
-                    </label>
+            <input
+              type="text"
+              value={planName}
+              disabled={disabled}
+              required={!readOnly}
+              onChange={(event) =>
+                onPlanNameChange(
+                  event.target.value
+                )
+              }
+              placeholder={t(
+                "planNamePlaceholder"
+              )}
+              className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--foreground)] outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[var(--muted)]"
+            />
+          </div>
 
-                    <input
-                      type="text"
-                      value={
-                        item.title.en
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        onUpdateItem(
-                          item.id,
-                          "titleEn",
-                          event.target
-                            .value
-                        )
-                      }
-                      disabled={
-                        isWorking
-                      }
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-                    />
-                  </div>
+          {/* ACADEMIC YEAR */}
 
-                  <div>
-                    <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t(
-                        "activityTitleAr"
-                      )}
-                    </label>
+          <div>
+            <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+              {t(
+                "academicYear"
+              )}
+            </label>
 
-                    <input
-                      type="text"
-                      dir="rtl"
-                      value={
-                        item.title.ar
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        onUpdateItem(
-                          item.id,
-                          "titleAr",
-                          event.target
-                            .value
-                        )
-                      }
-                      disabled={
-                        isWorking
-                      }
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-                    />
-                  </div>
-                </div>
+            <input
+              type="text"
+              value={
+                academicYear
+              }
+              disabled={
+                disabled
+              }
+              required={
+                !readOnly
+              }
+              onChange={(event) =>
+                onAcademicYearChange(
+                  event.target.value
+                )
+              }
+              placeholder={t(
+                "academicYearPlaceholder"
+              )}
+              className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--foreground)] outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[var(--muted)]"
+            />
+          </div>
 
-                {/* Categories */}
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t(
-                        "activityCategoryEn"
-                      )}
-                    </label>
+          {/* SEMESTER */}
 
-                    <input
-                      type="text"
-                      value={
-                        item.category.en
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        onUpdateItem(
-                          item.id,
-                          "categoryEn",
-                          event.target
-                            .value
-                        )
-                      }
-                      disabled={
-                        isWorking
-                      }
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-                    />
-                  </div>
+          <div>
+            <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+              {t(
+                "semester"
+              )}
+            </label>
 
-                  <div>
-                    <label className="text-sm font-semibold text-[var(--primary)]">
-                      {t(
-                        "activityCategoryAr"
-                      )}
-                    </label>
+            <select
+              value={
+                semester
+              }
+              disabled={
+                disabled
+              }
+              onChange={(event) =>
+                onSemesterChange(
+                  event.target
+                    .value as CollegePlanSemester
+                )
+              }
+              className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--foreground)] outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[var(--muted)]"
+            >
+              <option value="first">
+                {t(
+                  "semesters.first"
+                )}
+              </option>
 
-                    <input
-                      type="text"
-                      dir="rtl"
-                      value={
-                        item.category.ar
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        onUpdateItem(
-                          item.id,
-                          "categoryAr",
-                          event.target
-                            .value
-                        )
-                      }
-                      disabled={
-                        isWorking
-                      }
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-                    />
-                  </div>
-                </div>
+              <option value="second">
+                {t(
+                  "semesters.second"
+                )}
+              </option>
 
-                {/* Planned Date */}
-                <div className="mt-5">
-                  <label className="text-sm font-semibold text-[var(--primary)]">
-                    {t("plannedDate")}
-                  </label>
-
-                  <input
-                    type="date"
-                    value={
-                      item.plannedDate
-                    }
-                    onChange={(
-                      event
-                    ) =>
-                      onUpdateItem(
-                        item.id,
-                        "plannedDate",
-                        event.target
-                          .value
-                      )
-                    }
-                    disabled={
-                      isWorking
-                    }
-                    required
-                    className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:opacity-60"
-                  />
-                </div>
-              </div>
-            )
-          )}
+              <option value="summer">
+                {t(
+                  "semesters.summer"
+                )}
+              </option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      {/* PDF Upload */}
-      <div className="mt-10">
-        <label className="text-sm font-semibold text-[var(--primary)]">
-          {t("planFile")}
-        </label>
+        {/* CURRENT PDF */}
 
-        <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 px-6 py-10 text-center transition hover:border-[var(--secondary)]">
-          <Upload className="h-8 w-8 text-[var(--secondary)]" />
-
-          <span className="mt-4 font-semibold text-[var(--primary)]">
-            {file
-              ? file.name
-              : t("chooseFile")}
-          </span>
-
-          <span className="mt-2 text-sm text-[var(--muted)]">
-            {t("pdfOnly")}
-          </span>
-
-          <input
-            type="file"
-            accept="application/pdf,.pdf"
-            onChange={onFileChange}
-            disabled={isWorking}
-            className="hidden"
-          />
-        </label>
-      </div>
-
-      {/* Current PDF */}
-      {planUrl &&
-        !isStartingNewPlan && (
-          <div className="mt-8 rounded-2xl bg-[var(--background)] p-6">
-            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[var(--secondary)]">
-                  <FileText className="h-6 w-6" />
-                </div>
+        {planUrl && (
+          <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-[var(--secondary)]" />
 
                 <div>
-                  <p className="font-bold text-[var(--primary)]">
-                    {planName ||
-                      t(
-                        "currentPlan"
-                      )}
+                  <p className="text-sm font-bold text-[var(--primary)]">
+                    {planName}
                   </p>
 
-                  <p className="mt-1 text-sm text-[var(--muted)]">
+                  <p className="text-xs text-[var(--muted)]">
                     {t(
-                      "currentPlan"
+                      "currentFile"
                     )}
                   </p>
                 </div>
               </div>
 
-              <a
+              <Link
                 href={planUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold text-[var(--secondary)] transition hover:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-bold text-[var(--primary)] transition hover:border-[var(--secondary)] hover:text-[var(--secondary)]"
               >
-                {t("viewPlan")}
-              </a>
+                <Eye className="h-4 w-4" />
+
+                {t(
+                  "viewFile"
+                )}
+              </Link>
             </div>
           </div>
         )}
 
-      {/* Actions */}
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <button
-          type="submit"
-          disabled={isWorking}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-6 py-4 font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Save className="h-5 w-5" />
+        {/* PDF UPLOAD - DEAN ONLY */}
 
-          {saving
-            ? t("saving")
-            : t("save")}
-        </button>
+        {!readOnly && (
+          <div className="mt-6">
+            <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+              {t(
+                "planFile"
+              )}
+            </label>
 
-        {hasCurrentPlan &&
-          !isStartingNewPlan && (
+            <label
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-8 text-center transition ${
+                isWorking
+                  ? "cursor-not-allowed opacity-60"
+                  : "hover:border-[var(--secondary)]"
+              }`}
+            >
+              <Upload className="h-7 w-7 text-[var(--secondary)]" />
+
+              <p className="mt-3 font-bold text-[var(--primary)]">
+                {file
+                  ? file.name
+                  : t(
+                      "uploadFile"
+                    )}
+              </p>
+
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                {t(
+                  "pdfOnly"
+                )}
+              </p>
+
+              <input
+                type="file"
+                accept="application/pdf"
+                disabled={
+                  isWorking
+                }
+                onChange={
+                  onFileChange
+                }
+                className="hidden"
+              />
+            </label>
+          </div>
+        )}
+      </section>
+
+      {/* ============================================= */}
+      {/* PLANNED ACTIVITIES */}
+      {/* ============================================= */}
+
+      <section className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--background)] text-[var(--secondary)]">
+              <CalendarDays className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-[var(--primary)]">
+                {t(
+                  "plannedActivities"
+                )}
+              </h2>
+
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                {t(
+                  "plannedActivitiesDescription"
+                )}
+              </p>
+            </div>
+          </div>
+
+          {!readOnly && (
             <button
               type="button"
-              onClick={
-                onStartNewPlan
+              disabled={
+                isWorking
               }
-              disabled={isWorking}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--secondary)] px-6 py-4 font-semibold text-[var(--secondary)] transition hover:bg-[var(--background)] disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={
+                onAddItem
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--secondary)] px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <FilePlus2 className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
 
               {t(
-                "startNewSemester"
+                "addPlannedActivity"
               )}
             </button>
           )}
+        </div>
 
-        {isStartingNewPlan && (
-          <button
-            type="button"
-            onClick={
-              onCancelNewPlan
-            }
-            disabled={isWorking}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-4 font-semibold text-[var(--muted)] transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <X className="h-5 w-5" />
+        {/* EMPTY */}
 
-            {t(
-              "cancelNewSemester"
+        {items.length === 0 ? (
+          <div className="mt-8 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--background)] p-8 text-center">
+            <CalendarDays className="mx-auto h-8 w-8 text-[var(--muted)]" />
+
+            <p className="mt-3 font-bold text-[var(--primary)]">
+              {t(
+                "noPlannedActivities"
+              )}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-8 space-y-6">
+            {items.map(
+              (
+                item,
+                index
+              ) => (
+                <div
+                  key={
+                    item.id
+                  }
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-bold text-[var(--secondary)]">
+                        {t(
+                          "activityNumber",
+                          {
+                            number:
+                              index +
+                              1,
+                          }
+                        )}
+                      </p>
+                    </div>
+
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        disabled={
+                          isWorking
+                        }
+                        onClick={() =>
+                          onRemoveItem(
+                            item.id
+                          )
+                        }
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label={t(
+                          "removeActivity"
+                        )}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    {/* TITLE EN */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "activityTitleEn"
+                        )}
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          item
+                            .title
+                            .en
+                        }
+                        disabled={
+                          disabled
+                        }
+                        required={
+                          !readOnly
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "titleEn",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      />
+                    </div>
+
+                    {/* TITLE AR */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "activityTitleAr"
+                        )}
+                      </label>
+
+                      <input
+                        type="text"
+                        dir="rtl"
+                        value={
+                          item
+                            .title
+                            .ar
+                        }
+                        disabled={
+                          disabled
+                        }
+                        required={
+                          !readOnly
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "titleAr",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      />
+                    </div>
+
+                    {/* CATEGORY EN */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "activityCategoryEn"
+                        )}
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          item
+                            .category
+                            .en
+                        }
+                        disabled={
+                          disabled
+                        }
+                        required={
+                          !readOnly
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "categoryEn",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      />
+                    </div>
+
+                    {/* CATEGORY AR */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "activityCategoryAr"
+                        )}
+                      </label>
+
+                      <input
+                        type="text"
+                        dir="rtl"
+                        value={
+                          item
+                            .category
+                            .ar
+                        }
+                        disabled={
+                          disabled
+                        }
+                        required={
+                          !readOnly
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "categoryAr",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      />
+                    </div>
+
+                    {/* DATE */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "plannedDate"
+                        )}
+                      </label>
+
+                      <input
+                        type="date"
+                        value={
+                          item
+                            .plannedDate
+                        }
+                        disabled={
+                          disabled
+                        }
+                        required={
+                          !readOnly
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "plannedDate",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      />
+                    </div>
+
+                    {/* STATUS */}
+
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[var(--primary)]">
+                        {t(
+                          "status"
+                        )}
+                      </label>
+
+                      <select
+                        value={
+                          item.status
+                        }
+                        disabled={
+                          disabled
+                        }
+                        onChange={(event) =>
+                          onUpdateItem(
+                            item.id,
+                            "status",
+                            event
+                              .target
+                              .value
+                          )
+                        }
+                        className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 outline-none transition focus:border-[var(--secondary)] disabled:cursor-not-allowed disabled:bg-slate-50"
+                      >
+                        <option value="planned">
+                          {t(
+                            "statuses.planned"
+                          )}
+                        </option>
+
+                        <option value="in-progress">
+                          {t(
+                            "statuses.inProgress"
+                          )}
+                        </option>
+
+                        <option value="completed">
+                          {t(
+                            "statuses.completed"
+                          )}
+                        </option>
+
+                        <option value="cancelled">
+                          {t(
+                            "statuses.cancelled"
+                          )}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {item.activityId && (
+                    <div className="mt-5 flex items-center gap-2 rounded-xl bg-white p-3 text-sm font-semibold text-[var(--primary)]">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+
+                      {t(
+                        "linkedToActivity"
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
             )}
-          </button>
+          </div>
         )}
-      </div>
+      </section>
+
+      {/* ============================================= */}
+      {/* DEAN ACTIONS */}
+      {/* ============================================= */}
+
+      {!readOnly && (
+        <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {hasCurrentPlan &&
+              !isStartingNewPlan && (
+                <button
+                  type="button"
+                  disabled={
+                    isWorking
+                  }
+                  onClick={
+                    onStartNewPlan
+                  }
+                  className="rounded-xl border border-[var(--border)] bg-white px-5 py-3 text-sm font-bold text-[var(--primary)] transition hover:border-[var(--secondary)] hover:text-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {t(
+                    "startNewSemester"
+                  )}
+                </button>
+              )}
+
+            {isStartingNewPlan && (
+              <button
+                type="button"
+                disabled={
+                  isWorking
+                }
+                onClick={
+                  onCancelNewPlan
+                }
+                className="rounded-xl border border-[var(--border)] bg-white px-5 py-3 text-sm font-bold text-[var(--muted)] transition hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {t(
+                  "cancelNewSemester"
+                )}
+              </button>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={
+              isWorking
+            }
+            className="rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-bold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saving
+              ? t(
+                  "saving"
+                )
+              : t(
+                  "save"
+                )}
+          </button>
+        </section>
+      )}
     </form>
   );
 }

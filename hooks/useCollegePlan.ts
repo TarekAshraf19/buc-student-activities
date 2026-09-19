@@ -279,85 +279,101 @@ export function useCollegePlan(
     );
   };
 
-  const updateItem = (
-    itemId: string,
-    field:
-      | "titleEn"
-      | "titleAr"
-      | "categoryEn"
-      | "categoryAr"
-      | "plannedDate",
-    value: string
-  ) => {
-    setItems(
-      (
-        currentItems
-      ) =>
-        currentItems.map(
-          (
-            item: CollegePlanItem
-          ) => {
-            if (
-              item.id !== itemId
-            ) {
-              return item;
-            }
-
-            switch (field) {
-              case "titleEn":
-                return {
-                  ...item,
-
-                  title: {
-                    ...item.title,
-                    en: value,
-                  },
-                };
-
-              case "titleAr":
-                return {
-                  ...item,
-
-                  title: {
-                    ...item.title,
-                    ar: value,
-                  },
-                };
-
-              case "categoryEn":
-                return {
-                  ...item,
-
-                  category: {
-                    ...item.category,
-                    en: value,
-                  },
-                };
-
-              case "categoryAr":
-                return {
-                  ...item,
-
-                  category: {
-                    ...item.category,
-                    ar: value,
-                  },
-                };
-
-              case "plannedDate":
-                return {
-                  ...item,
-                  plannedDate:
-                    value,
-                };
-
-              default:
-                return item;
-            }
+const updateItem = (
+  itemId: string,
+  field:
+    | "titleEn"
+    | "titleAr"
+    | "categoryEn"
+    | "categoryAr"
+    | "plannedDate"
+    | "status",
+  value: string
+) => {
+  setItems(
+    (
+      currentItems
+    ) =>
+      currentItems.map(
+        (
+          item: CollegePlanItem
+        ) => {
+          if (
+            item.id !== itemId
+          ) {
+            return item;
           }
-        )
-    );
-  };
+
+          switch (field) {
+            case "titleEn":
+              return {
+                ...item,
+
+                title: {
+                  ...item.title,
+                  en: value,
+                },
+              };
+
+            case "titleAr":
+              return {
+                ...item,
+
+                title: {
+                  ...item.title,
+                  ar: value,
+                },
+              };
+
+            case "categoryEn":
+              return {
+                ...item,
+
+                category: {
+                  ...item.category,
+                  en: value,
+                },
+              };
+
+            case "categoryAr":
+              return {
+                ...item,
+
+                category: {
+                  ...item.category,
+                  ar: value,
+                },
+              };
+
+            case "plannedDate":
+              return {
+                ...item,
+                plannedDate:
+                  value,
+              };
+
+            case "status":
+              if (
+                value !== "planned" &&
+                value !== "in-progress" &&
+                value !== "completed" &&
+                value !== "cancelled"
+              ) {
+                return item;
+              }
+
+              return {
+                ...item,
+                status: value,
+              };
+
+            default:
+              return item;
+          }
+        }
+      )
+  );
+};
 
   const startNewPlan = () => {
     if (!hasCurrentPlan) {

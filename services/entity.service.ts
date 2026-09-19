@@ -1,8 +1,6 @@
 import {
-  collection,
-  getDocs,
-  query,
-  where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -12,15 +10,26 @@ import type {
   LocalizedText,
 } from "@/types/activity";
 
+export type DashboardUserRole =
+  | "uploader"
+  | "dean";
+
 export type CurrentEntity = {
   scopeType: ActivityScopeType;
   scopeId: string;
   name: LocalizedText;
-  active?: boolean;
+  active: boolean;
+  role: DashboardUserRole;
+};
+
+type DashboardUserDocument = {
+  role: DashboardUserRole;
+  scopeType: ActivityScopeType;
+  scopeId: string;
+  active: boolean;
 };
 
 type EntityDocumentData = {
-  userId?: string;
   active?: boolean;
 
   name?: {
@@ -33,6 +42,29 @@ type EntityDocumentData = {
     ar?: string;
   };
 };
+
+function getEntityCollectionName(
+  scopeType: ActivityScopeType
+): string {
+  switch (scopeType) {
+    case "college":
+      return "colleges";
+
+    case "local-regional":
+      return "Local & Regional Activities";
+
+    case "student-club":
+      return "student_club";
+
+    case "scientific-society":
+      return "Scientific Societies";
+
+    default:
+      throw new Error(
+        "Unsupported entity scope."
+      );
+  }
+}
 
 function getEntityName(
   data: EntityDocumentData
@@ -50,100 +82,115 @@ function getEntityName(
   };
 }
 
-async function findUserInCollection(
-  collectionName: string,
-  userId: string,
-  scopeType: ActivityScopeType
-): Promise<CurrentEntity | null> {
-  const entitiesQuery =
-    query(
-      collection(
-        db,
-        collectionName
-      ),
-      where(
-        "userId",
-        "==",
-        userId
-      )
-    );
+function isValidDashboardUserRole(
+  role: unknown
+): role is DashboardUserRole {
+  return (
+    role === "uploader" ||
+    role === "dean"
+  );
+}
 
-  const snapshot =
-    await getDocs(
-      entitiesQuery
-    );
-
-  if (snapshot.empty) {
-    return null;
-  }
-
-  const document =
-    snapshot.docs[0];
-
-  const data =
-    document.data() as EntityDocumentData;
-
-  return {
-    scopeType,
-    scopeId:
-      document.id,
-
-    name:
-      getEntityName(
-        data
-      ),
-
-    active:
-      data.active,
-  };
+function isValidScopeType(
+  scopeType: unknown
+): scopeType is ActivityScopeType {
+  return (
+    scopeType === "college" ||
+    scopeType === "local-regional" ||
+    scopeType === "student-club" ||
+    scopeType === "scientific-society"
+  );
 }
 
 export async function getCurrentEntity(
   userId: string
 ): Promise<CurrentEntity | null> {
-  const college =
-    await findUserInCollection(
-      "colleges",
-      userId,
-      "college"
+  const dashboardUserRef = doc(
+    db,
+    "dashboardUsers",
+    userId
+  );
+
+  const dashboardUserSnapshot =
+    await getDoc(
+      dashboardUserRef
     );
 
-  if (college) {
-    return college;
+  if (
+    !dashboardUserSnapshot.exists()
+  ) {
+    return null;
   }
 
-  const localRegional =
-    await findUserInCollection(
-      "Local & Regional Activities",
-      userId,
-      "local-regional"
+  const dashboardUser =
+    dashboardUserSnapshot.data() as
+      Partial<DashboardUserDocument>;
+
+  if (
+    !isValidDashboardUserRole(
+      dashboardUser.role
+    ) ||
+    !isValidScopeType(
+      dashboardUser.scopeType
+    ) ||
+    typeof dashboardUser.scopeId !==
+      "string" ||
+    !dashboardUser.scopeId
+  ) {
+    throw new Error(
+      "Invalid dashboard user configuration."
+    );
+  }
+
+  if (
+    dashboardUser.active !== true
+  ) {
+    return null;
+  }
+
+  const entityCollectionName =
+    getEntityCollectionName(
+      dashboardUser.scopeType
     );
 
-  if (localRegional) {
-    return localRegional;
-  }
+  const entityRef = doc(
+    db,
+    entityCollectionName,
+    dashboardUser.scopeId
+  );
 
-  const scientificSociety =
-    await findUserInCollection(
-      "Scientific Societies",
-      userId,
-      "scientific-society"
+  const entitySnapshot =
+    await getDoc(
+      entityRef
     );
 
-  if (scientificSociety) {
-    return scientificSociety;
+  if (!entitySnapshot.exists()) {
+    return null;
   }
 
-  const studentClub =
-    await findUserInCollection(
-      "student_club",
-      userId,
-      "student-club"
-    );
+  const entityData =
+    entitySnapshot.data() as
+      EntityDocumentData;
 
-  if (studentClub) {
-    return studentClub;
+  if (entityData.active === false) {
+    return null;
   }
 
-  return null;
+  return {
+    scopeType:
+      dashboardUser.scopeType,
+
+    scopeId:
+      dashboardUser.scopeId,
+
+    name:
+      getEntityName(
+        entityData
+      ),
+
+    active: true,
+
+    role:
+      dashboardUser.role,
+  };
 }

@@ -5,16 +5,12 @@ import {
 } from "firebase/auth";
 
 import { auth } from "@/lib/firebase";
-
-import {
-  getCurrentEntity,
-} from "@/services/entity.service";
+import { getCurrentEntity } from "@/services/entity.service";
 
 export class AccountInactiveError extends Error {
   constructor() {
     super("ACCOUNT_INACTIVE");
-    this.name =
-      "AccountInactiveError";
+    this.name = "AccountInactiveError";
   }
 }
 
@@ -22,35 +18,30 @@ export async function login(
   email: string,
   password: string
 ): Promise<UserCredential> {
-  const credential =
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+  const credential = await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
 
   try {
-    const entity =
-      await getCurrentEntity(
-        credential.user.uid
-      );
+    const entity = await getCurrentEntity(
+      credential.user.uid
+    );
 
-    if (entity?.active === false) {
+    // الحساب لازم يكون مربوط بـ dashboardUsers
+    // ولازم يكون Active
+    if (!entity || entity.active !== true) {
       await signOut(auth);
-
       throw new AccountInactiveError();
     }
 
     return credential;
   } catch (error) {
-    if (
-      error instanceof
-      AccountInactiveError
-    ) {
-      throw error;
+    // نتأكد إن مفيش Session مفتوحة لو حصل أي خطأ
+    if (auth.currentUser) {
+      await signOut(auth);
     }
-
-    await signOut(auth);
 
     throw error;
   }

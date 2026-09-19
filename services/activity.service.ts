@@ -1,17 +1,20 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
   query,
-  runTransaction,
   serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import {
+  db,
+} from "@/lib/firebase";
 
 import type {
   Activity,
@@ -19,113 +22,107 @@ import type {
   StudentClubCategory,
 } from "@/types/activity";
 
-import type {
-  CollegePlan,
-  CollegePlanItem,
-} from "@/types/college-plan";
-
-export type CreateActivityData =
-  Omit<Activity, "id">;
-
-export type UpdateActivityData =
-  Partial<Omit<Activity, "id">>;
-
-const activitiesCollection =
-  collection(db, "activities");
-
-export async function getActivities(): Promise<
-  Activity[]
-> {
-  const snapshot =
-    await getDocs(
-      activitiesCollection
-    );
-
-  return snapshot.docs.map(
-    (document) => ({
-      id: document.id,
-      ...document.data(),
-    })
-  ) as Activity[];
-}
-
-export async function getActivityById(
-  activityId: string
-): Promise<Activity | null> {
-  const activityRef = doc(
-    db,
-    "activities",
-    activityId
-  );
-
-  const snapshot =
-    await getDoc(
-      activityRef
-    );
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  } as Activity;
-}
+/*
+ * =========================================================
+ * TYPES
+ * =========================================================
+ */
 
 /*
- * بنجيب اسم الكلية من scopeId
- * عشان نعرضه في Activity Card
- * و Activity Details.
+ * status / review information is never supplied
+ * by the Add Activity form.
+ *
+ * Every new Activity starts as pending.
  */
-export async function getCollegeNameById(
-  collegeId: string
-): Promise<{
-  en: string;
-  ar: string;
-} | null> {
-  if (!collegeId) {
-    return null;
-  }
+export type CreateActivityData =
+  Omit<
+    Activity,
+    | "id"
+    | "status"
+    | "reviewedBy"
+    | "reviewedAt"
+    | "declineReason"
+    | "plannedItemId"
+  >;
 
-  const collegeRef = doc(
+/*
+ * Dean editing is limited to Activity content.
+ *
+ * These fields cannot be edited here:
+ * - id
+ * - status
+ * - reviewedBy
+ * - reviewedAt
+ * - declineReason
+ * - createdBy
+ * - scopeType
+ * - scopeId
+ * - plannedItemId
+ */
+export type UpdateActivityData =
+  Partial<
+    Pick<
+      Activity,
+      | "title"
+      | "description"
+      | "category"
+      | "date"
+      | "image"
+      | "subcategoryId"
+    >
+  >;
+
+const activitiesCollection =
+  collection(
     db,
-    "colleges",
-    collegeId
+    "activities"
   );
 
-  const snapshot =
-    await getDoc(
-      collegeRef
-    );
+/*
+ * =========================================================
+ * HELPERS
+ * =========================================================
+ */
 
-  if (!snapshot.exists()) {
-    return null;
+function mapActivity(
+  documentSnapshot: {
+    id: string;
+    data: () => unknown;
   }
+): Activity {
+  return {
+    id:
+      documentSnapshot.id,
 
-  const data =
-    snapshot.data();
-
-  if (!data.name) {
-    return null;
-  }
-
-  return data.name as {
-    en: string;
-    ar: string;
+    ...(documentSnapshot.data() as Omit<
+      Activity,
+      "id"
+    >),
   };
 }
 
-export async function getActivitiesByScope(
-  scopeType: ActivityScopeType
-): Promise<Activity[]> {
+/*
+ * =========================================================
+ * PUBLIC QUERIES
+ * =========================================================
+ *
+ * Public website must only receive approved Activities.
+ */
+
+/*
+ * Get all approved Activities.
+ */
+export async function getActivities(): Promise<
+  Activity[]
+> {
   const activitiesQuery =
     query(
       activitiesCollection,
+
       where(
-        "scopeType",
+        "status",
         "==",
-        scopeType
+        "approved"
       )
     );
 
@@ -135,13 +132,144 @@ export async function getActivitiesByScope(
     );
 
   return snapshot.docs.map(
-    (document) => ({
-      id: document.id,
-      ...document.data(),
-    })
-  ) as Activity[];
+    mapActivity
+  );
 }
 
+/*
+ * Get one Activity for the Public Website.
+ *
+ * Pending and declined Activities
+ * must never be displayed publicly.
+ */
+export async function getActivityById(
+  activityId: string
+): Promise<Activity | null> {
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
+    );
+
+  const snapshot =
+    await getDoc(
+      activityRef
+    );
+
+  if (
+    !snapshot.exists()
+  ) {
+    return null;
+  }
+
+  const activity = {
+    id:
+      snapshot.id,
+
+    ...snapshot.data(),
+  } as Activity;
+
+  if (
+    activity.status !==
+    "approved"
+  ) {
+    return null;
+  }
+
+  return activity;
+}
+
+/*
+ * Get School name for Activity cards/details.
+ */
+export async function getCollegeNameById(
+  collegeId: string
+): Promise<{
+  en: string;
+  ar: string;
+} | null> {
+  if (
+    !collegeId
+  ) {
+    return null;
+  }
+
+  const collegeRef =
+    doc(
+      db,
+      "colleges",
+      collegeId
+    );
+
+  const snapshot =
+    await getDoc(
+      collegeRef
+    );
+
+  if (
+    !snapshot.exists()
+  ) {
+    return null;
+  }
+
+  const data =
+    snapshot.data();
+
+  if (
+    !data.name
+  ) {
+    return null;
+  }
+
+  return data.name as {
+    en: string;
+    ar: string;
+  };
+}
+
+/*
+ * Public Activities by scope.
+ *
+ * Example:
+ * college / student-club / local-regional.
+ */
+export async function getActivitiesByScope(
+  scopeType: ActivityScopeType
+): Promise<Activity[]> {
+  const activitiesQuery =
+    query(
+      activitiesCollection,
+
+      where(
+        "scopeType",
+        "==",
+        scopeType
+      ),
+
+      where(
+        "status",
+        "==",
+        "approved"
+      )
+    );
+
+  const snapshot =
+    await getDocs(
+      activitiesQuery
+    );
+
+  return snapshot.docs.map(
+    mapActivity
+  );
+}
+
+/*
+ * Public Activities for one specific entity.
+ *
+ * Example:
+ * School of Business.
+ */
 export async function getActivitiesByScopeId(
   scopeType: ActivityScopeType,
   scopeId: string
@@ -149,11 +277,109 @@ export async function getActivitiesByScopeId(
   const activitiesQuery =
     query(
       activitiesCollection,
+
       where(
         "scopeType",
         "==",
         scopeType
       ),
+
+      where(
+        "scopeId",
+        "==",
+        scopeId
+      ),
+
+      where(
+        "status",
+        "==",
+        "approved"
+      )
+    );
+
+  const snapshot =
+    await getDocs(
+      activitiesQuery
+    );
+
+  return snapshot.docs.map(
+    mapActivity
+  );
+}
+
+/*
+ * Public Student Activities
+ * filtered by category.
+ */
+export async function getStudentClubActivitiesByCategory(
+  category: StudentClubCategory
+): Promise<Activity[]> {
+  const activitiesQuery =
+    query(
+      activitiesCollection,
+
+      where(
+        "scopeType",
+        "==",
+        "student-club"
+      ),
+
+      where(
+        "subcategoryId",
+        "==",
+        category
+      ),
+
+      where(
+        "status",
+        "==",
+        "approved"
+      )
+    );
+
+  const snapshot =
+    await getDocs(
+      activitiesQuery
+    );
+
+  return snapshot.docs.map(
+    mapActivity
+  );
+}
+
+/*
+ * =========================================================
+ * DASHBOARD QUERIES
+ * =========================================================
+ *
+ * Dashboard users need to see all statuses:
+ *
+ * pending
+ * approved
+ * declined
+ *
+ * Firestore Security Rules enforce
+ * that the user can only read their own scope.
+ */
+
+/*
+ * Get all Activities for the current
+ * Dashboard user's scope.
+ */
+export async function getDashboardActivitiesByScopeId(
+  scopeType: ActivityScopeType,
+  scopeId: string
+): Promise<Activity[]> {
+  const activitiesQuery =
+    query(
+      activitiesCollection,
+
+      where(
+        "scopeType",
+        "==",
+        scopeType
+      ),
+
       where(
         "scopeId",
         "==",
@@ -167,179 +393,128 @@ export async function getActivitiesByScopeId(
     );
 
   return snapshot.docs.map(
-    (document) => ({
-      id: document.id,
-      ...document.data(),
-    })
-  ) as Activity[];
+    mapActivity
+  );
 }
 
-export async function getStudentClubActivitiesByCategory(
-  category: StudentClubCategory
-): Promise<Activity[]> {
-  const activitiesQuery =
-    query(
-      activitiesCollection,
-      where(
-        "scopeType",
-        "==",
-        "student-club"
-      ),
-      where(
-        "subcategoryId",
-        "==",
-        category
-      )
+/*
+ * Get one Activity inside Dashboard.
+ *
+ * No status filter here because
+ * Dashboard needs pending/approved/declined.
+ *
+ * Firestore Rules enforce scope access.
+ */
+export async function getDashboardActivityById(
+  activityId: string
+): Promise<Activity | null> {
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
     );
 
   const snapshot =
-    await getDocs(
-      activitiesQuery
+    await getDoc(
+      activityRef
     );
 
-  return snapshot.docs.map(
-    (document) => ({
-      id: document.id,
-      ...document.data(),
-    })
-  ) as Activity[];
+  if (
+    !snapshot.exists()
+  ) {
+    return null;
+  }
+
+  return {
+    id:
+      snapshot.id,
+
+    ...snapshot.data(),
+  } as Activity;
 }
+
+/*
+ * =========================================================
+ * CREATE ACTIVITY
+ * =========================================================
+ *
+ * Uploader and Dean can create Activities.
+ *
+ * Every new Activity:
+ *
+ * status = pending
+ *
+ * IMPORTANT:
+ *
+ * The client NEVER writes to collegePlans here.
+ *
+ * If plannedItemId exists, it is stored
+ * on the Activity document only.
+ *
+ * A trusted backend function will later
+ * perform the School Plan linking.
+ */
 
 export async function createActivity(
   data: CreateActivityData,
   plannedItemId?: string
 ): Promise<string> {
-  /*
-   * أي نشاط غير College
-   * أو College activity غير مرتبط بالخطة.
-   */
-  if (
-    data.scopeType !== "college" ||
-    !plannedItemId
-  ) {
-    const documentRef =
-      await addDoc(
-        activitiesCollection,
-        data
-      );
+  const cleanedPlannedItemId =
+    plannedItemId?.trim();
 
-    return documentRef.id;
-  }
+  const activityData = {
+    ...data,
 
-  /*
-   * College activity مرتبط بـ
-   * planned item.
-   *
-   * إنشاء النشاط + ربطه بالخطة
-   * بيحصلوا في transaction واحدة.
-   */
-  const activityRef =
-    doc(
-      activitiesCollection
+    status:
+      "pending" as const,
+
+    ...(
+      data.scopeType ===
+        "college" &&
+      cleanedPlannedItemId
+        ? {
+            plannedItemId:
+              cleanedPlannedItemId,
+          }
+        : {}
+    ),
+  };
+
+  const documentRef =
+    await addDoc(
+      activitiesCollection,
+      activityData
     );
 
-  const planRef = doc(
-    db,
-    "collegePlans",
-    data.scopeId
-  );
-
-  await runTransaction(
-    db,
-    async (transaction) => {
-      const planSnapshot =
-        await transaction.get(
-          planRef
-        );
-
-      if (
-        !planSnapshot.exists()
-      ) {
-        throw new Error(
-          "COLLEGE_PLAN_NOT_FOUND"
-        );
-      }
-
-      const plan = {
-        id: planSnapshot.id,
-        ...planSnapshot.data(),
-      } as CollegePlan;
-
-      const plannedItem =
-        plan.items.find(
-          (
-            item: CollegePlanItem
-          ) =>
-            item.id ===
-            plannedItemId
-        );
-
-      if (!plannedItem) {
-        throw new Error(
-          "PLANNED_ACTIVITY_NOT_FOUND"
-        );
-      }
-
-      if (
-        plannedItem.activityId
-      ) {
-        throw new Error(
-          "PLANNED_ACTIVITY_ALREADY_LINKED"
-        );
-      }
-
-      const updatedItems:
-        CollegePlanItem[] =
-        plan.items.map(
-          (
-            item: CollegePlanItem
-          ) => {
-            if (
-              item.id !==
-              plannedItemId
-            ) {
-              return item;
-            }
-
-            return {
-              ...item,
-              activityId:
-                activityRef.id,
-              status:
-                "completed",
-            };
-          }
-        );
-
-      transaction.set(
-        activityRef,
-        data
-      );
-
-      transaction.update(
-        planRef,
-        {
-          items:
-            updatedItems,
-          updatedAt:
-            serverTimestamp(),
-        }
-      );
-    }
-  );
-
-  return activityRef.id;
+  return documentRef.id;
 }
+
+/*
+ * =========================================================
+ * EDIT ACTIVITY
+ * =========================================================
+ *
+ * Dean only.
+ *
+ * Firestore Security Rules enforce:
+ * - role == dean
+ * - same scope
+ *
+ * This service intentionally exposes
+ * only editable Activity content fields.
+ */
 
 export async function updateActivity(
   activityId: string,
   data: UpdateActivityData
 ): Promise<void> {
-  const activityRef = doc(
-    db,
-    "activities",
-    activityId
-  );
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
+    );
 
   await updateDoc(
     activityRef,
@@ -347,141 +522,132 @@ export async function updateActivity(
   );
 }
 
+/*
+ * =========================================================
+ * APPROVE ACTIVITY
+ * =========================================================
+ *
+ * Dean only.
+ *
+ * Firestore Rules enforce:
+ * - role == dean
+ * - same scope
+ * - reviewedBy == request.auth.uid
+ */
+
+export async function approveActivity(
+  activityId: string,
+  reviewerId: string
+): Promise<void> {
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
+    );
+
+  await updateDoc(
+    activityRef,
+    {
+      status:
+        "approved",
+
+      reviewedBy:
+        reviewerId,
+
+      reviewedAt:
+        serverTimestamp(),
+
+      /*
+       * Remove an old decline reason
+       * if a previously declined Activity
+       * is later approved.
+       */
+      declineReason:
+        deleteField(),
+    }
+  );
+}
+
+/*
+ * =========================================================
+ * DECLINE ACTIVITY
+ * =========================================================
+ *
+ * Dean only.
+ */
+
+export async function declineActivity(
+  activityId: string,
+  reviewerId: string,
+  declineReason: string
+): Promise<void> {
+  const reason =
+    declineReason.trim();
+
+  if (
+    !reason
+  ) {
+    throw new Error(
+      "DECLINE_REASON_REQUIRED"
+    );
+  }
+
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
+    );
+
+  await updateDoc(
+    activityRef,
+    {
+      status:
+        "declined",
+
+      reviewedBy:
+        reviewerId,
+
+      reviewedAt:
+        serverTimestamp(),
+
+      declineReason:
+        reason,
+    }
+  );
+}
+
+/*
+ * =========================================================
+ * DELETE ACTIVITY
+ * =========================================================
+ *
+ * Dean only.
+ *
+ * IMPORTANT:
+ *
+ * The client deletes only the Activity.
+ *
+ * If the Activity is linked to a School Plan,
+ * unlinking/resetting the Plan Item must be
+ * handled by trusted backend code.
+ *
+ * The client never receives permission
+ * to modify collegePlans as part of deletion.
+ */
+
 export async function deleteActivity(
   activityId: string
 ): Promise<void> {
-  const activityRef = doc(
-    db,
-    "activities",
-    activityId
-  );
+  const activityRef =
+    doc(
+      db,
+      "activities",
+      activityId
+    );
 
-  await runTransaction(
-    db,
-    async (transaction) => {
-      /*
-       * الأول نجيب النشاط عشان نعرف
-       * هل هو College activity ولا لأ.
-       */
-      const activitySnapshot =
-        await transaction.get(
-          activityRef
-        );
-
-      if (
-        !activitySnapshot.exists()
-      ) {
-        return;
-      }
-
-      const activity = {
-        id: activitySnapshot.id,
-        ...activitySnapshot.data(),
-      } as Activity;
-
-      /*
-       * الأنشطة غير التابعة لكلية
-       * مالهاش College Plan.
-       */
-      if (
-        activity.scopeType !==
-        "college"
-      ) {
-        transaction.delete(
-          activityRef
-        );
-
-        return;
-      }
-
-      const planRef = doc(
-        db,
-        "collegePlans",
-        activity.scopeId
-      );
-
-      const planSnapshot =
-        await transaction.get(
-          planRef
-        );
-
-      /*
-       * لو مفيش structured plan،
-       * نحذف النشاط عادي.
-       */
-      if (
-        !planSnapshot.exists()
-      ) {
-        transaction.delete(
-          activityRef
-        );
-
-        return;
-      }
-
-      const plan = {
-        id: planSnapshot.id,
-        ...planSnapshot.data(),
-      } as CollegePlan;
-
-      let linkFound = false;
-
-      const updatedItems:
-        CollegePlanItem[] =
-        plan.items.map(
-          (
-            item: CollegePlanItem
-          ) => {
-            if (
-              item.activityId !==
-              activityId
-            ) {
-              return item;
-            }
-
-            linkFound = true;
-
-            /*
-             * بنشيل activityId تمامًا
-             * بدل ما نحطه undefined.
-             */
-            const {
-              activityId:
-                _activityId,
-              ...itemWithoutActivity
-            } = item;
-
-            return {
-              ...itemWithoutActivity,
-              status:
-                "planned",
-            };
-          }
-        );
-
-      /*
-       * لو النشاط كان مربوط ببند
-       * في الخطة، نفك الربط.
-       */
-      if (linkFound) {
-        transaction.update(
-          planRef,
-          {
-            items:
-              updatedItems,
-            updatedAt:
-              serverTimestamp(),
-          }
-        );
-      }
-
-      /*
-       * وفي نفس transaction نحذف
-       * النشاط نفسه.
-       */
-      transaction.delete(
-        activityRef
-      );
-    }
+  await deleteDoc(
+    activityRef
   );
 }

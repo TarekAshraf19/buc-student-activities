@@ -3,39 +3,190 @@
 import Link from "next/link";
 
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useRouter,
+} from "next/navigation";
+
+import {
   ArrowLeft,
   ArrowRight,
 } from "lucide-react";
 
-import { useTranslations } from "next-intl";
+import {
+  useTranslations,
+} from "next-intl";
 
 import CollegePlanForm from "@/components/dashboard/CollegePlanForm";
 
-import { useAuth } from "@/hooks/useAuth";
-import { useLocale } from "@/hooks/useLocale";
-import { useCurrentCollege } from "@/hooks/useCurrentCollege";
-import { useCollegePlan } from "@/hooks/useCollegePlan";
+import {
+  useAuth,
+} from "@/hooks/useAuth";
+
+import {
+  useLocale,
+} from "@/hooks/useLocale";
+
+import {
+  useCurrentEntity,
+} from "@/hooks/useCurrentEntity";
+
+import {
+  useCollegePlan,
+} from "@/hooks/useCollegePlan";
+
+import type {
+  College,
+} from "@/types/college";
+
+import {
+  getCollegeById,
+} from "@/services/college.service";
 
 export default function CollegePlanPage() {
+  const router =
+    useRouter();
+
   const t =
-    useTranslations("CollegePlan");
+    useTranslations(
+      "CollegePlan"
+    );
 
   const {
     locale,
     isArabic,
-  } = useLocale();
+  } =
+    useLocale();
 
   const {
     user,
-    loading: authLoading,
-  } = useAuth();
+    loading:
+      authLoading,
+  } =
+    useAuth();
 
   const {
+    entity,
+    loading:
+      entityLoading,
+    error:
+      entityError,
+  } =
+    useCurrentEntity();
+
+  const [
     college,
-    loading: collegeLoading,
-  } = useCurrentCollege(
-    user?.uid
-  );
+    setCollege,
+  ] =
+    useState<College | null>(
+      null
+    );
+
+  const [
+    collegeLoading,
+    setCollegeLoading,
+  ] =
+    useState(true);
+
+  /*
+   * =========================================================
+   * PERMISSIONS
+   * =========================================================
+   */
+
+  const isCollege =
+    entity?.scopeType ===
+    "college";
+
+  const isDean =
+    entity?.role ===
+    "dean";
+
+  const readOnly =
+    !isDean;
+
+  /*
+   * =========================================================
+   * LOAD SCHOOL BY SCOPE ID
+   * =========================================================
+   */
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    if (entityLoading) {
+      return;
+    }
+
+    if (
+      !entity ||
+      entity.scopeType !==
+        "college"
+    ) {
+      setCollege(null);
+      setCollegeLoading(
+        false
+      );
+
+      return;
+    }
+
+    async function loadCollege() {
+      try {
+        setCollegeLoading(
+          true
+        );
+
+        const data =
+          await getCollegeById(
+            entity!.scopeId
+          );
+
+        if (!cancelled) {
+          setCollege(
+            data
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error loading school:",
+          error
+        );
+
+        if (!cancelled) {
+          setCollege(
+            null
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setCollegeLoading(
+            false
+          );
+        }
+      }
+    }
+
+    loadCollege();
+
+    return () => {
+      cancelled =
+        true;
+    };
+  }, [
+    entity,
+    entityLoading,
+  ]);
+
+  /*
+   * =========================================================
+   * PLAN
+   * =========================================================
+   */
 
   const {
     planName,
@@ -66,7 +217,10 @@ export default function CollegePlanPage() {
     startNewPlan,
     cancelNewPlan,
     savePlan,
-  } = useCollegePlan(college);
+  } =
+    useCollegePlan(
+      college
+    );
 
   const BackArrow =
     isArabic
@@ -75,14 +229,49 @@ export default function CollegePlanPage() {
 
   const loading =
     authLoading ||
+    entityLoading ||
     collegeLoading ||
     loadingPlan;
 
+  /*
+   * =========================================================
+   * AUTH PROTECTION
+   * =========================================================
+   */
+
+  useEffect(() => {
+    if (
+      !authLoading &&
+      !user
+    ) {
+      router.replace(
+        `/${locale}/login`
+      );
+    }
+  }, [
+    authLoading,
+    user,
+    locale,
+    router,
+  ]);
+
+  /*
+   * =========================================================
+   * FILE
+   * =========================================================
+   */
+
   const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event:
+      React.ChangeEvent<HTMLInputElement>
   ) => {
+    if (!isDean) {
+      return;
+    }
+
     const selectedFile =
-      event.target.files?.[0];
+      event.target
+        .files?.[0];
 
     if (!selectedFile) {
       return;
@@ -93,35 +282,59 @@ export default function CollegePlanPage() {
       "application/pdf"
     ) {
       alert(
-        t("invalidFile")
+        t(
+          "invalidFile"
+        )
       );
 
-      event.target.value = "";
+      event.target.value =
+        "";
 
       clearFile();
 
       return;
     }
 
-    selectFile(selectedFile);
+    selectFile(
+      selectedFile
+    );
   };
 
+  /*
+   * =========================================================
+   * SAVE
+   * =========================================================
+   */
+
   const handleSave = async (
-    event: React.FormEvent<HTMLFormElement>
+    event:
+      React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
-    if (!planName.trim()) {
+    if (!isDean) {
+      return;
+    }
+
+    if (
+      !planName.trim()
+    ) {
       alert(
-        t("nameRequired")
+        t(
+          "nameRequired"
+        )
       );
 
       return;
     }
 
-    if (!academicYear.trim()) {
+    if (
+      !academicYear.trim()
+    ) {
       alert(
-        t("academicYearRequired")
+        t(
+          "academicYearRequired"
+        )
       );
 
       return;
@@ -132,7 +345,9 @@ export default function CollegePlanPage() {
       !planUrl
     ) {
       alert(
-        t("fileRequired")
+        t(
+          "fileRequired"
+        )
       );
 
       return;
@@ -163,19 +378,33 @@ export default function CollegePlanPage() {
 
     if (!success) {
       alert(
-        t("saveError")
+        t(
+          "saveError"
+        )
       );
 
       return;
     }
 
     alert(
-      t("saveSuccess")
+      t(
+        "saveSuccess"
+      )
     );
   };
 
+  /*
+   * =========================================================
+   * START NEW PLAN
+   * =========================================================
+   */
+
   const handleStartNewPlan =
     () => {
+      if (!isDean) {
+        return;
+      }
+
       const confirmed =
         window.confirm(
           t(
@@ -190,8 +419,18 @@ export default function CollegePlanPage() {
       startNewPlan();
     };
 
+  /*
+   * =========================================================
+   * CANCEL NEW PLAN
+   * =========================================================
+   */
+
   const handleCancelNewPlan =
     () => {
+      if (!isDean) {
+        return;
+      }
+
       const confirmed =
         window.confirm(
           t(
@@ -206,17 +445,40 @@ export default function CollegePlanPage() {
       cancelNewPlan();
     };
 
+  /*
+   * =========================================================
+   * LOADING
+   * =========================================================
+   */
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6">
         <p className="text-[var(--muted)]">
-          {t("loading")}
+          {t(
+            "loading"
+          )}
         </p>
       </main>
     );
   }
 
-  if (!college) {
+  if (!user) {
+    return null;
+  }
+
+  /*
+   * =========================================================
+   * INVALID ACCOUNT / NOT A SCHOOL
+   * =========================================================
+   */
+
+  if (
+    entityError ||
+    !entity ||
+    !isCollege ||
+    !college
+  ) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6">
         <p className="text-[var(--muted)]">
@@ -228,9 +490,16 @@ export default function CollegePlanPage() {
     );
   }
 
+  /*
+   * =========================================================
+   * PAGE
+   * =========================================================
+   */
+
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 pb-20 pt-32">
       <div className="mx-auto max-w-4xl">
+
         <Link
           href={`/${locale}/dashboard`}
           className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)] transition hover:text-[var(--secondary)]"
@@ -243,27 +512,43 @@ export default function CollegePlanPage() {
             }`}
           />
 
-          {t("back")}
+          {t(
+            "back"
+          )}
         </Link>
 
         <div className="mt-10">
           <p className="text-sm font-semibold tracking-[0.2em] text-[var(--secondary)]">
-            {t("eyebrow")}
+            {t(
+              "eyebrow"
+            )}
           </p>
 
           <h1 className="mt-4 text-4xl font-bold text-[var(--primary)] md:text-5xl">
-            {t("title")}
+            {t(
+              "title"
+            )}
           </h1>
 
           <p className="mt-4 text-lg leading-8 text-[var(--muted)]">
-            {t("description")}
+            {t(
+              "description"
+            )}
           </p>
         </div>
 
         <CollegePlanForm
-          planName={planName}
-          planUrl={planUrl}
-          file={file}
+          planName={
+            planName
+          }
+
+          planUrl={
+            planUrl
+          }
+
+          file={
+            file
+          }
 
           academicYear={
             academicYear
@@ -273,9 +558,13 @@ export default function CollegePlanPage() {
             semester
           }
 
-          items={items}
+          items={
+            items
+          }
 
-          saving={saving}
+          saving={
+            saving
+          }
 
           loadingPlan={
             loadingPlan
@@ -287,6 +576,10 @@ export default function CollegePlanPage() {
 
           isStartingNewPlan={
             isStartingNewPlan
+          }
+
+          readOnly={
+            readOnly
           }
 
           onPlanNameChange={
